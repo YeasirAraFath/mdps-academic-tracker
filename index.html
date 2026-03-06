@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<script src="https://apis.google.com/js/api.js"></script>
+
+<script>
+const CLIENT_ID = "486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com";
+const SCOPES = "https://www.googleapis.com/auth/drive.file";
+
+function initGoogle(){
+    gapi.load('client:auth2', async ()=>{
+        await gapi.client.init({
+            clientId: CLIENT_ID,
+            scope: SCOPES
+        });
+    });
+}
+
+function signInGoogle(){
+    gapi.auth2.getAuthInstance().signIn();
+}
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MDPS Tracker — Khulna University</title>
@@ -358,7 +379,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 </style>
 
 </head>
-<body>
+<body onload="initGoogle()">
 <div class="sb-bg" id="sb-bg" onclick="closeSb()"></div>
 <div class="app">
 
@@ -411,9 +432,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <div class="topbar-l"><h2 id="dash-greet">Good morning!</h2><p id="dash-date"></p></div>
     </div>
     <div class="topbar-r">
-      <button class="btn btn-ghost btn-sm" onclick="openTeacherAdd()">+ Teacher</button>
-      <button class="btn btn-primary btn-sm" onclick="openAddEvent()">+ Add Event</button>
-    </div>
+<button class="btn btn-primary" onclick="signInGoogle()">
+🔗 Connect Google Drive
+</button>
+<button class="btn btn-ghost btn-sm" onclick="openTeacherAdd()">+ Teacher</button>
+<button class="btn btn-primary btn-sm" onclick="openAddEvent()">+ Add Event</button>
   </div>
 
   <!-- Term info -->
