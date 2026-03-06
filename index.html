@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDPS Tracker — Khulna University</title>
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg:#f5f6fa; --bg2:#edeef5; --card:#fff; 
+            --border:#e4e4ee; --text:#1a1a2e; --text2:#6b6b8a; --text3:#a8a8c0;
+            --accent:#5c4fd6; --sh:0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+            --r:12px; --font:'Geist', sans-serif; --mono:'Geist Mono', monospace;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; }
+
+        .app { display:flex; min-height:100vh; }
+        
+        /* Sidebar Styles */
+        .sidebar { 
+            width:260px; background:var(--card); border-right:1px solid var(--border); 
+            display:flex; flex-direction:column; position:sticky; top:0; height:100vh; 
+        }
+        .sb-logo { padding:1.5rem; border-bottom:1px solid var(--border); }
+        .sb-logo h1 { font-size:1rem; font-weight:700; }
+        .sb-logo span { font-size:0.7rem; color:var(--accent); font-weight:600; letter-spacing:1px; }
+
+        .profile-pill { 
+            margin:1rem; background:var(--bg2); border-radius:var(--r); padding:0.8rem; 
+            display:flex; align-items:center; gap:0.8rem; border:1px solid var(--border); 
+        }
+        .pp-av { 
+            width:40px; height:40px; border-radius:50%; background:var(--accent); 
+            color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; 
+        }
+        .pp-name { font-size:0.85rem; font-weight:600; }
+        .pp-id { font-size:0.65rem; color:var(--text3); font-family:var(--mono); }
+
+        .nav-item { 
+            display:flex; align-items:center; gap:0.7rem; width:calc(100% - 2rem); margin:0.2rem 1rem;
+            padding:0.8rem 1rem; border:none; background:none; color:var(--text2); 
+            font-size:0.9rem; cursor:pointer; border-radius:var(--r); transition: 0.2s;
+        }
+        .nav-item:hover { background:var(--bg2); color:var(--text); }
+        .nav-item.active { background:var(--accent); color:#fff; }
+
+        /* Main Content */
+        .main { flex:1; padding:2.5rem; overflow-y:auto; }
+        .page { display:none; }
+        .page.active { display:block; }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1.5rem; margin-bottom:2.5rem; }
+        .stat-card { background:var(--card); padding:1.5rem; border-radius:var(--r); border:1px solid var(--border); box-shadow:var(--sh); }
+        .stat-label { font-size:0.7rem; text-transform:uppercase; color:var(--text3); margin-bottom:0.5rem; font-weight:600; }
+        .stat-value { font-size:1.8rem; font-weight:700; }
+
+        /* Table Styles */
+        .table-container { background:var(--card); border-radius:var(--r); border:1px solid var(--border); box-shadow:var(--sh); overflow:hidden; }
+        table { width:100%; border-collapse:collapse; }
+        th { background:#f8f9fc; text-align:left; padding:1rem; font-size:0.75rem; color:var(--text3); text-transform:uppercase; border-bottom:1px solid var(--border); }
+        td { padding:1rem; border-bottom:1px solid var(--border); font-size:0.9rem; }
+        tr:last-child td { border-bottom:none; }
+
+        .controls { display:flex; gap:1rem; margin-bottom:1.5rem; align-items:center; }
+        .search-input { flex:1; padding:0.7rem 1rem; border-radius:var(--r); border:1px solid var(--border); outline:none; }
+        .btn { padding:0.7rem 1.2rem; border-radius:var(--r); border:none; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; transition:0.2s; }
+        .btn-primary { background:var(--accent); color:white; }
+        .btn-primary:hover { opacity:0.9; }
+
+        .hidden { display:none; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <aside class="sidebar">
+        <div class="sb-logo">
+            <h1>MDPS TRACKER</h1>
+            <span>KHULNA UNIVERSITY</span>
+        </div>
+        
+        <div class="profile-pill">
+            <div class="pp-av">YA</div>
+            <div class="pp-info">
+                <p class="pp-name">Yeasir Arafath</p>
+                <p class="pp-id">ID: 261510</p>
+            </div>
+        </div>
+
+        <nav style="margin-top:1rem; flex:1;">
+            <button class="nav-item active" onclick="showPage('dashboard', this)"><i class="fa-solid fa-house"></i> Dashboard</button>
+            <button class="nav-item" onclick="showPage('students', this)"><i class="fa-solid fa-user-graduate"></i> Students</button>
+            <button class="nav-item" onclick="showPage('teachers', this)"><i class="fa-solid fa-chalkboard-user"></i> Teachers</button>
+        </nav>
+        
+        <div style="padding:1rem;">
+            <button id="signin_button" class="nav-item" onclick="handleAuthClick()" style="background:var(--bg2); color:var(--text);">
+                <i class="fa-brands fa-google"></i> Sign In to Google
+            </button>
+            <button id="signout_button" class="nav-item hidden" onclick="handleSignoutClick()">
+                <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div id="page-dashboard" class="page active">
+            <h2 style="margin-bottom:0.5rem;">Academic Overview</h2>
+            <p style="color:var(--text3); margin-bottom:2rem;">MDPS Session: 2025-2026</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <p class="stat-label">Total Students</p>
+                    <p class="stat-value" id="count-students">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Courses</p>
+                    <p class="stat-value">06</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Attendance</p>
+                    <p class="stat-value" style="color:#0d7a56;">94%</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-students" class="page">
+            <div class="controls">
+                <h2 style="flex:1;">Student Registry</h2>
+                <input type="text" id="search" class="search-input" placeholder="Search name or ID..." onkeyup="renderStudents()">
+                <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="importStudents()">
+                <button class="btn btn-primary" onclick="document.getElementById('excelFile').click()">
+                    <i class="fa-solid fa-file-import"></i> Import Excel
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Full Name</th>
+                            <th>Email Address</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Configuration
+    const CLIENT_ID = '486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+    let tokenClient;
+    let gapiInited = false;
+    let gisInited = false;
+
+    // Load initial data from LocalStorage
+    let STUDENTS = JSON.parse(localStorage.getItem('mdps-students')) || [
+        { id: "261510", name: "Syed Yeasir Arafath", email: "yeasir.arafath@ku.ac.bd" }
+    ];
+
+    // Initialize Google API Client
+    function gapiLoaded() {
+        gapi.load('client', async () => {
+            await gapi.client.init({
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            });
+            gapiInited = true;
+        });
+    }
+
+    // Initialize Google Identity Services
+    function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: (resp) => {
+                if (resp.error) return;
+                document.getElementById('signin_button').classList.add('hidden');
+                document.getElementById('signout_button').classList.remove('hidden');
+            },
+        });
+        gisInited = true;
+    }
+
+    function handleAuthClick() {
+        if (gapi.client.getToken() === null) {
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        } else {
+            tokenClient.requestAccessToken({prompt: ''});
+        }
+    }
+
+    function handleSignoutClick() {
+        const token = gapi.client.getToken();
+        if (token !== null) {
+            google.accounts.oauth2.revoke(token.access_token);
+            gapi.client.setToken('');
+            document.getElementById('signin_button').classList.remove('hidden');
+            document.getElementById('signout_button').classList.add('hidden');
+        }
+    }
+
+    // Navigation and Rendering
+    function showPage(pageId, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if(pageId === 'students') renderStudents();
+    }
+
+    function renderStudents() {
+        const q = document.getElementById('search').value.toLowerCase();
+        const tbody = document.getElementById('student-table');
+        tbody.innerHTML = '';
+        
+        const filtered = STUDENTS.filter(s => 
+            s.name.toLowerCase().includes(q) || s.id.includes(q)
+        );
+
+        document.getElementById('count-students').innerText = filtered.length;
+
+        filtered.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><code style="font-family:var(--mono);">${s.id}</code></td>
+                <td><strong>${s.name}</strong></td>
+                <td><span style="color:var(--text2);">${s.email}</span></td>
+                <td><span style="background:#e6f9f2; color:#0d7a56; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:700;">Active</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function importStudents() {
+        const file = document.getElementById('excelFile').files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet);
+            
+            // Map columns: adjust 'ID', 'Name', 'Email' to match your Excel headers
+            STUDENTS = rows.map(r => ({
+                id: String(r.ID || r.Id || r.Roll || ''),
+                name: r.Name || r.FullName || 'Unknown',
+                email: r.Email || ''
+            }));
+
+            localStorage.setItem('mdps-students', JSON.stringify(STUDENTS));
+            renderStudents();
+            alert(`Imported ${STUDENTS.length} records successfully.`);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    window.onload = () => {
+        gapiLoaded();
+        gisLoaded();
+        renderStudents();
+    };
+</script>
+</body>
+</html>
