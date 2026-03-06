@@ -1219,6 +1219,40 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(typeof renderStudents==="function") renderStudents();
 });
 </script>
+<button onclick="handleAuthClick()" style="background: #4285F4; color: white; padding: 10px; border-radius: 5px; cursor: pointer; border: none;">
+  Connect Google Drive
+</button>
 
+<script src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script>
+  const CLIENT_ID = '486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
+  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+  let tokenClient;
+
+  function gapiLoaded() {
+    gapi.load('client', async () => {
+      await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+    });
+  }
+
+  function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: async (resp) => {
+        if (resp.error !== undefined) throw (resp);
+        alert("Successfully connected to Google Drive!");
+        // Your logic to load/save data goes here
+      },
+    });
+  }
+
+  function handleAuthClick() {
+    tokenClient.requestAccessToken({prompt: 'consent'});
+  }
+</script>
 </body>
 </html>
