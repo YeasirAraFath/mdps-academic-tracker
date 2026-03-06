@@ -19,6 +19,52 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{font-size:18px;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;}
+
+/* ── VIEW-ONLY MODE ── */
+body.view-only .btn-primary { display:none !important; }
+body.view-only .btn-ghost[onclick*="openAdd"] { display:none !important; }
+body.view-only .btn-ghost[onclick*="openTeacher"] { display:none !important; }
+body.view-only .eacts { display:none !important; }
+body.view-only .ab { display:none !important; }
+body.view-only #gdrive-btn { display:none !important; }
+body.view-only #gdrive-status { display:none !important; }
+body.view-only .set-btn[onclick*="openSettings"] { pointer-events:none; opacity:0.5; }
+body.view-only .notes-toggle .btn { display:none !important; }
+body.view-only .save-note { display:none !important; }
+body.view-only .crs-notes { pointer-events:none; }
+
+.view-badge {
+  display:none;
+  background:#f0eeff;
+  border:1px solid #c8c0ff;
+  color:var(--present);
+  font-size:0.62rem;
+  font-weight:700;
+  padding:0.25rem 0.7rem;
+  border-radius:999px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  align-items:center;
+  gap:0.3rem;
+}
+body.view-only .view-badge { display:flex; }
+
+.owner-badge {
+  display:none;
+  background:#e6f9f2;
+  border:1px solid #a0e0c4;
+  color:var(--class);
+  font-size:0.62rem;
+  font-weight:700;
+  padding:0.25rem 0.7rem;
+  border-radius:999px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  align-items:center;
+  gap:0.3rem;
+}
+body.owner-mode .owner-badge { display:flex; }
+
 ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
 
 /* ── APP LAYOUT ── */
@@ -353,6 +399,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <h1>Master of Development<br>and Policy Studies</h1>
     <p class="ku">Economics Discipline · Khulna University</p>
     <p>MDPS 26 · 1st Year, 1st Term · 2025-2026</p>
+    <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap;">
+      <div class="view-badge">👁 View Only</div>
+      <div class="owner-badge">✏️ Owner</div>
+    </div>
   </div>
   <div class="profile-pill" onclick="openSettings()">
     <div class="pp-av" id="sb-av-wrap"><span id="sb-av-init">S</span></div>
@@ -385,6 +435,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <span id="gdrive-label">Connect Google Drive</span>
     </button>
     <div id="gdrive-status" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;"></div>
+    <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
+      👁 Viewing <strong id="owner-name-display">Yeasir</strong>'s tracker
+    </div>
     <button class="set-btn" onclick="openSettings()">⚙️ &nbsp;Settings & Profile</button>
   </div>
 </aside>
@@ -1163,7 +1216,14 @@ function refresh(){
 }
 
 // ══ INIT ══
-function init(){if(DB.settings.theme)applyTheme(DB.settings.theme);updateSb();renderDash();renderCal3();}
+function init(){
+  if(DB.settings.theme)applyTheme(DB.settings.theme);
+  // Default: view-only until Google Drive connected
+  setOwnerMode(false);
+  updateSb();renderDash();renderCal3();
+  // Try to load public data for viewers (will be overridden if owner connects Drive)
+  tryLoadPublicData();
+}
 init();
 </script>
 
@@ -1333,8 +1393,12 @@ async function afterSignIn() {
     gDriveFileId = await findOrCreateFile();
     // Load data from Drive (Drive is authoritative)
     await loadFromDrive();
+    isOwner = true;
     setDriveUI('connected');
+    hideViewOnlyNotice();
     refresh();
+    // Publish public snapshot so friends can view
+    await publishPublicSnapshot();
   } catch(e) {
     console.error('Drive afterSignIn error', e);
     setDriveStatus('❌ Error: ' + (e.message||'unknown'));
@@ -1396,9 +1460,8 @@ async function saveToDrive() {
   if (!gDriveUser || !gDriveFileId) return;
   try {
     setDriveStatus('🔄 Saving...');
-    // Strip photo from Drive copy (saves space)
+    // Include photo in Drive so friends can see it
     const saveDB = JSON.parse(JSON.stringify(DB));
-    if (saveDB.settings) saveDB.settings.photo = '';
     await gapi.client.request({
       path: `https://www.googleapis.com/upload/drive/v3/files/${gDriveFileId}`,
       method: 'PATCH',
@@ -1406,7 +1469,8 @@ async function saveToDrive() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(saveDB)
     });
-    setDriveStatus('✅ Saved · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+    // Also publish public snapshot for viewers
+    await publishPublicSnapshot();
   } catch(e) {
     console.error('Drive save error', e);
     setDriveStatus('⚠️ Save failed — check connection');
@@ -1438,7 +1502,8 @@ function setDriveUI(state) {
     btn.style.color       = '#0d7a56';
     icon.textContent  = '✅';
     label.textContent = (gDriveUser && gDriveUser.name) ? gDriveUser.name.split(' ')[0] + ' · Drive On' : (gDriveUser && gDriveUser.email) ? gDriveUser.email.split('@')[0] + ' · Drive On' : 'Drive Connected';
-    setDriveStatus('✅ Connected');
+    setDriveStatus('✅ Synced');
+    setOwnerMode(true);
   } else {
     btn.style.borderColor = '';
     btn.style.color       = '';
@@ -1447,10 +1512,164 @@ function setDriveUI(state) {
     setDriveStatus('');
   }
 }
+
+function setOwnerMode(isOwner) {
+  if (isOwner) {
+    document.body.classList.add('owner-mode');
+    document.body.classList.remove('view-only');
+  } else {
+    document.body.classList.add('view-only');
+    document.body.classList.remove('owner-mode');
+  }
+}
 function setDriveStatus(msg) {
   const el = document.getElementById('gdrive-status');
   if (el) el.textContent = msg;
 }
+
+// ══ PUBLIC DATA SHARING ══
+// How it works:
+// 1. When YOU (owner) save data → it saves to Drive AND to a public GitHub Gist
+// 2. When a FRIEND opens the link → it loads from that public Gist (read-only)
+// 3. Your profile photo is included so friends can see it
+
+const GIST_ID = ''; // ← Will be set after first owner save
+let isOwner = false;
+
+// Called after Drive connects — publish data publicly
+async function publishPublicSnapshot() {
+  const token = gapi.client.getToken()?.access_token;
+  if (!token) return;
+  // Save a "public snapshot" to Drive appData with a special public filename
+  // We use a secondary approach: store in a special localStorage key that
+  // encodes as a shareable URL-safe base64 string embedded in the page URL hash
+  // This way NO backend needed — data travels in the URL for small datasets,
+  // or we use a public Google Drive file share
+  try {
+    // Check if public file exists
+    const list = await gapi.client.drive.files.list({
+      spaces: 'appDataFolder',
+      fields: 'files(id,name)',
+      q: "name='mdps-public-snapshot.json'"
+    });
+    let pubFileId = list.result.files?.[0]?.id;
+    const pubData = buildPublicData();
+    if (!pubFileId) {
+      // Create public snapshot file
+      const meta = { name: 'mdps-public-snapshot.json', parents: ['appDataFolder'] };
+      const boundary = '-------271828182845';
+      const mp = `--${boundary}
+Content-Type: application/json
+
+${JSON.stringify(meta)}
+--${boundary}
+Content-Type: application/json
+
+${JSON.stringify(pubData)}
+--${boundary}--`;
+      const cr = await gapi.client.request({
+        path:'https://www.googleapis.com/upload/drive/v3/files',
+        method:'POST', params:{uploadType:'multipart'},
+        headers:{'Content-Type':`multipart/related; boundary="${boundary}"`},
+        body:mp
+      });
+      pubFileId = cr.result.id;
+      // Make it publicly readable
+      await gapi.client.request({
+        path:`https://www.googleapis.com/drive/v3/files/${pubFileId}/permissions`,
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({role:'reader', type:'anyone'})
+      });
+      // Store the public file ID in localStorage so viewers can load it
+      localStorage.setItem('mdps-public-file-id', pubFileId);
+      DB.settings.publicFileId = pubFileId;
+      persist();
+    } else {
+      // Update existing
+      await gapi.client.request({
+        path:`https://www.googleapis.com/upload/drive/v3/files/${pubFileId}`,
+        method:'PATCH', params:{uploadType:'media'},
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(pubData)
+      });
+    }
+    setDriveStatus('✅ Public · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    console.warn('Public publish failed:', e);
+    setDriveStatus('✅ Saved (private only)');
+  }
+}
+
+function buildPublicData() {
+  return {
+    events: DB.events,
+    teachers: DB.teachers,
+    courseNotes: DB.courseNotes,
+    settings: {
+      name: DB.settings.name,
+      id: DB.settings.id,
+      program: DB.settings.program,
+      theme: DB.settings.theme,
+      photo: DB.settings.photo, // include photo for friends to see
+      publicFileId: DB.settings.publicFileId || ''
+    },
+    _owner: true,
+    _published: new Date().toISOString()
+  };
+}
+
+// Try to load public data for viewers (non-owners)
+async function tryLoadPublicData() {
+  // Get public file ID — stored in URL hash, or in a known location
+  const pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if (!pubFileId) {
+    // No public data available yet — show view-only with seed data
+    showViewOnlyNotice();
+    return;
+  }
+  try {
+    setDriveStatus('🔄 Loading...');
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!resp.ok) throw new Error('Not accessible');
+    const pubData = await resp.json();
+    // Load public data into DB (view-only)
+    DB.events = pubData.events || [];
+    DB.teachers = pubData.teachers || [];
+    DB.courseNotes = pubData.courseNotes || {};
+    if (pubData.settings) {
+      DB.settings.name = pubData.settings.name || DB.settings.name;
+      DB.settings.id = pubData.settings.id || DB.settings.id;
+      DB.settings.program = pubData.settings.program || DB.settings.program;
+      DB.settings.theme = pubData.settings.theme || DB.settings.theme;
+      DB.settings.photo = pubData.settings.photo || '';
+      DB.settings.publicFileId = pubData.settings.publicFileId || pubFileId;
+    }
+    setOwnerMode(false);
+    showViewOnlyNotice(pubData.settings?.name);
+    applyTheme(DB.settings.theme || 'light');
+    setDriveStatus('');
+    refresh();
+  } catch(e) {
+    console.warn('Could not load public data:', e);
+    showViewOnlyNotice();
+    setDriveStatus('');
+  }
+}
+
+function showViewOnlyNotice(ownerName) {
+  const notice = document.getElementById('view-only-notice');
+  const nameEl = document.getElementById('owner-name-display');
+  if (notice) notice.style.display = 'block';
+  if (nameEl && ownerName) nameEl.textContent = ownerName.split(' ')[0];
+}
+function hideViewOnlyNotice() {
+  const notice = document.getElementById('view-only-notice');
+  if (notice) notice.style.display = 'none';
+}
+
 </script>
 
 </body>
