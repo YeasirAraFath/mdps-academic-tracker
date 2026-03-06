@@ -1233,7 +1233,7 @@ function importStudents(){
 
 
 <script>
-let STUDENTS = JSON.parse(localStorage.getItem('mdps-students') || '[]');
+STUDENTS = JSON.parse(localStorage.getItem('mdps-students') || '[]');
 
 function saveStudents(){
   localStorage.setItem('mdps-students', JSON.stringify(STUDENTS));
