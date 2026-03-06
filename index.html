@@ -1321,10 +1321,13 @@ async function afterSignIn() {
   try {
     setDriveStatus('🔄 Connecting...');
     // Get user info
-    const uResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: 'Bearer ' + gapi.client.getToken().access_token }
-    });
-    const uInfo = await uResp.json();
+    let uInfo = {};
+    try {
+      const uResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: 'Bearer ' + gapi.client.getToken().access_token }
+      });
+      uInfo = await uResp.json();
+    } catch(ue) { uInfo = { name: 'My Account', email: '' }; }
     gDriveUser = uInfo;
     // Find or create the data file
     gDriveFileId = await findOrCreateFile();
@@ -1434,7 +1437,7 @@ function setDriveUI(state) {
     btn.style.borderColor = '#0d7a56';
     btn.style.color       = '#0d7a56';
     icon.textContent  = '✅';
-    label.textContent = gDriveUser ? gDriveUser.name.split(' ')[0] + ' · Drive On' : 'Drive Connected';
+    label.textContent = (gDriveUser && gDriveUser.name) ? gDriveUser.name.split(' ')[0] + ' · Drive On' : (gDriveUser && gDriveUser.email) ? gDriveUser.email.split('@')[0] + ' · Drive On' : 'Drive Connected';
     setDriveStatus('✅ Connected');
   } else {
     btn.style.borderColor = '';
