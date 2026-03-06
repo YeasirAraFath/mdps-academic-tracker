@@ -379,7 +379,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="nb" data-p="events" data-f="presentation" onclick="go('events','presentation')"><span class="ndot" style="background:var(--present)"></span>Presentations<span class="nc" id="nc-pr">0</span></button>
     <button class="nb" data-p="events" data-f="class" onclick="go('events','class')"><span class="ndot" style="background:var(--class)"></span>Classes<span class="nc" id="nc-cl">0</span></button>
   </nav>
-  <div class="sb-footer">
+  <div class="sb-footer" style="display:flex;flex-direction:column;gap:0.4rem;">
+    <button class="set-btn" id="gdrive-btn" onclick="handleDriveClick()" style="gap:0.5rem;">
+      <span id="gdrive-icon">☁️</span>
+      <span id="gdrive-label">Connect Google Drive</span>
+    </button>
+    <div id="gdrive-status" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;"></div>
     <button class="set-btn" onclick="openSettings()">⚙️ &nbsp;Settings & Profile</button>
   </div>
 </aside>
@@ -538,36 +543,39 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 </div>
 
 
+
 <!-- STUDENTS -->
 <div class="page" id="page-students">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
       <button class="mobile-menu" onclick="toggleSb()">☰</button>
-      <div class="topbar-l"><h2>Students</h2><p>Student directory</p></div>
+      <div class="topbar-l"><h2>Students</h2><p>MDPS 26 Batch · Student Directory</p></div>
     </div>
   </div>
-
-  <div style="margin-bottom:10px;">
-    <input id="student-search" placeholder="Search students..." 
-    style="padding:8px;border:1px solid #ccc;border-radius:6px;width:260px;" oninput="renderStudents()">
+  <div style="display:flex;gap:0.6rem;margin-bottom:0.9rem;flex-wrap:wrap;align-items:center">
+    <input id="student-search" placeholder="Search by name or email..."
+      style="padding:0.45rem 0.8rem;border:1px solid var(--border);border-radius:var(--rsm);background:var(--card);color:var(--text);font-family:var(--font);font-size:0.78rem;width:220px;outline:none;"
+      oninput="renderStudents()">
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+      📥 Import Excel
+      <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none" onchange="importStudents()">
+    </label>
+    <span id="student-count" style="font-size:0.68rem;color:var(--text3);font-family:var(--mono);margin-left:auto;"></span>
   </div>
-
-  <div style="margin-bottom:10px;">
-    <input type="file" id="excelFile" accept=".xlsx,.xls">
-    <button class="btn btn-primary btn-sm" onclick="importStudents()">Import Excel</button>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:var(--bg2)">
+          <th style="padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3)">ID</th>
+          <th style="padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3)">Name</th>
+          <th style="padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);text-align:left;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3)">Email</th>
+        </tr>
+      </thead>
+      <tbody id="students-table"></tbody>
+    </table>
   </div>
-
-  <table style="width:100%;border-collapse:collapse;background:white;border:1px solid #ddd;">
-    <thead>
-      <tr style="background:#f5f5f5">
-        <th style="padding:8px;border:1px solid #ddd">ID</th>
-        <th style="padding:8px;border:1px solid #ddd">Name</th>
-        <th style="padding:8px;border:1px solid #ddd">Email</th>
-      </tr>
-    </thead>
-    <tbody id="students-table"></tbody>
-  </table>
 </div>
+
 
 </main>
 </div>
@@ -738,8 +746,37 @@ const SEED={
   ]
 };
 
-function load(){const s=localStorage.getItem(SK);if(s){try{DB=JSON.parse(s);}catch(e){DB.events=JSON.parse(JSON.stringify(SEED.events));DB.teachers=JSON.parse(JSON.stringify(SEED.teachers));}}else{DB.events=JSON.parse(JSON.stringify(SEED.events));DB.teachers=JSON.parse(JSON.stringify(SEED.teachers));persist();}}
-function persist(){localStorage.setItem(SK,JSON.stringify(DB));}
+// ══ STORAGE: localStorage + Google Drive sync ══
+const DRIVE_FILE_NAME = 'mdps-tracker-data.json';
+let gDriveFileId = null;       // ID of the JSON file in Drive
+let gDriveUser   = null;       // signed-in user info
+let driveSyncTimer = null;     // debounce timer
+
+function load() {
+  const s = localStorage.getItem(SK);
+  if (s) {
+    try { DB = JSON.parse(s); } catch(e) { _seedDB(); }
+  } else { _seedDB(); }
+}
+function _seedDB() {
+  DB.events   = JSON.parse(JSON.stringify(SEED.events));
+  DB.teachers = JSON.parse(JSON.stringify(SEED.teachers));
+  persist();
+}
+
+// Always save to localStorage immediately; schedule Drive sync
+function persist() {
+  localStorage.setItem(SK, JSON.stringify(DB));
+  scheduleDriveSync();
+}
+
+// Debounce Drive writes — wait 1.5 s after last change
+function scheduleDriveSync() {
+  if (!gDriveUser) return;
+  clearTimeout(driveSyncTimer);
+  driveSyncTimer = setTimeout(saveToDrive, 1500);
+}
+
 load();
 
 // ══ UTILS ══
@@ -771,6 +808,7 @@ function go(page,filter){
   if(page==='events')renderEvents();
   if(page==='courses')renderCourses();
   if(page==='teachers')renderTeachers();
+  if(page==='students')renderStudents();
   closeSb();
 }
 
@@ -1129,130 +1167,288 @@ function init(){if(DB.settings.theme)applyTheme(DB.settings.theme);updateSb();re
 init();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-let STUDENTS=[];
-
-function renderStudents(){
-  const q=document.getElementById('student-search').value.toLowerCase();
-  const tb=document.getElementById('students-table');
-  tb.innerHTML='';
-  STUDENTS.filter(s=>!q||s.name.toLowerCase().includes(q)||s.email.toLowerCase().includes(q))
-  .forEach(s=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td style="padding:8px;border:1px solid #ddd">${s.id||''}</td>
-      <td style="padding:8px;border:1px solid #ddd">${s.name}</td>
-      <td style="padding:8px;border:1px solid #ddd">
-        <a href="mailto:${s.email}">${s.email}</a>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function importStudents(){
-  const file=document.getElementById('excelFile').files[0];
-  if(!file){alert("Select an Excel file first");return;}
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const data=new Uint8Array(e.target.result);
-    const wb=XLSX.read(data,{type:'array'});
-    const sheet=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(sheet,{header:1});
-    STUDENTS=rows.slice(1).map(r=>({
-      id:r[1]||'',
-      name:r[2]||'',
-      email:r[3]||''
-    })).filter(s=>s.name);
-    renderStudents();
-  };
-  reader.readAsArrayBuffer(file);
-}
-</script>
-
-
-<script>
-// Persist students using localStorage
+// ══ STUDENTS ══
 let STUDENTS = JSON.parse(localStorage.getItem('mdps-students') || '[]');
 
-function saveStudents(){
+function saveStudents() {
   localStorage.setItem('mdps-students', JSON.stringify(STUDENTS));
 }
 
-function renderStudents(){
-  const q = document.getElementById('student-search').value.toLowerCase();
+function renderStudents() {
+  const q = (document.getElementById('student-search')?.value || '').toLowerCase();
   const tb = document.getElementById('students-table');
-  tb.innerHTML='';
-  STUDENTS.filter(s => !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q))
-  .forEach(s=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td style="padding:8px;border:1px solid #ddd">${s.id||''}</td>
-      <td style="padding:8px;border:1px solid #ddd">${s.name}</td>
-      <td style="padding:8px;border:1px solid #ddd"><a href="mailto:${s.email}">${s.email}</a></td>`;
-    tb.appendChild(tr);
+  if (!tb) return;
+  const filtered = STUDENTS.filter(s => !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
+  document.getElementById('student-count').textContent = filtered.length + ' of ' + STUDENTS.length + ' students';
+  tb.innerHTML = filtered.map((s,i) => `
+    <tr style="border-bottom:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+      <td style="padding:0.55rem 0.8rem;font-size:0.72rem;font-family:var(--mono);color:var(--text3)">${s.id||''}</td>
+      <td style="padding:0.55rem 0.8rem;font-size:0.8rem;font-weight:500">${s.name}</td>
+      <td style="padding:0.55rem 0.8rem;font-size:0.72rem"><a href="mailto:${s.email}" style="color:var(--accent);text-decoration:none">${s.email}</a></td>
+    </tr>`).join('');
+}
+
+function importStudents() {
+  const file = document.getElementById('excelFile').files[0];
+  if (!file) return;
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js';
+  script.onload = () => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      STUDENTS = rows.slice(1).map(r => ({
+        id: (r[1]||'').toString().trim(),
+        name: (r[2]||'').toString().trim(),
+        email: (r[3]||'').toString().trim()
+      })).filter(s => s.name);
+      saveStudents();
+      renderStudents();
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  if (window.XLSX) { script.onload(); } else { document.head.appendChild(script); }
+}
+
+// Pre-load the MDPS 26 batch
+if (!STUDENTS.length) {
+  STUDENTS = [
+    {id:'MDPS-261501',name:'George Benedict Das',email:'geobdas@gmail.com'},
+    {id:'MDPS-261502',name:'Babul Shaikh',email:'shaikhbabul89@yahoo.com'},
+    {id:'MDPS-261503',name:'Md. Sharifur Rahman Mazumder',email:'sharif.dcc94@gmail.com'},
+    {id:'MDPS-261504',name:'Mst. Halima Akhter Popy',email:'mst.halima.ap90@gmail.com'},
+    {id:'MDPS-261505',name:'Mst. Laila Khatoon',email:'lailakhatoon1993@gmail.com'},
+    {id:'MDPS-261506',name:'Khadija Sultana',email:'hlw.manila@gmail.com'},
+    {id:'MDPS-261507',name:'Preya Panday',email:'pandaypreya2026@gmail.com'},
+    {id:'MDPS-261508',name:'Rittwi Rahman',email:'rittwirahman@gmail.com'},
+    {id:'MDPS-261509',name:'Md. Borhan Uddin Imran',email:'borhanmath141221@gmail.com'},
+    {id:'MDPS-261510',name:'Syed Yeasir Arafath',email:'soruku00@gmail.com'},
+    {id:'MDPS-261511',name:'Md. Mostofa Kamal',email:'dknmrtz21@gmail.com'},
+    {id:'MDPS-261512',name:'Nurjahan',email:'Inflorerense.pushpa@gmail.com'},
+    {id:'MDPS-261513',name:'MD Asraful Islam',email:'iasraful823@gmail.com'},
+    {id:'MDPS-261514',name:'Rekha Yesmin',email:'rekha.yesmin@gmail.com'},
+    {id:'MDPS-261515',name:'Rima Akhter',email:'etirima97@gmail.com'},
+    {id:'MDPS-261516',name:'Tapon Kumar',email:'tbiswas369@gmail.com'},
+    {id:'MDPS-261517',name:'Sagufta Sakendar Khan',email:'mehtakhan1237@gmail.com'},
+    {id:'MDPS-261518',name:'Anika Tasnim Arpa',email:'anikatasnimorpa@gmail.com'},
+    {id:'MDPS-261519',name:'Puja Sarkar',email:'ps1123965@gmail.com'},
+    {id:'MDPS-261520',name:'MD. Abdur Rahman',email:'Arrahmanniloy88@gmail.com'},
+    {id:'MDPS-261521',name:'Md. Mahidul Islam',email:'mahidul.codec@gmail.com'},
+    {id:'MDPS-261522',name:'Md Basim Kamal Khan Nirob',email:'Basim.kamal.khan@gmail.com'},
+    {id:'MDPS-261523',name:'Laila Arobi Mimi',email:'idiomphrase9@gmail.com'},
+    {id:'MDPS-261524',name:'Sharmin Khan Akhi',email:'akhi.moni.2019@gmail.com'},
+    {id:'MDPS-261525',name:'Md. Mahbubul Azam',email:'mahbub.bba@gmail.com'},
+    {id:'MDPS-261526',name:'Subhera Sadi',email:'subherasadi99@gmail.com'},
+    {id:'MDPS-261527',name:'Alvi Ahasan',email:'aapranto.bh@gmail.com'},
+    {id:'MDPS-261528',name:'Shahira Tul Kubra',email:'hasib7699@gmail.com'},
+    {id:'MDPS-261529',name:'Farzana Khatun',email:'aa7758129@gmail.com'},
+    {id:'MDPS-241525',name:'Sharmin Sultana Rima',email:'sharminsultanar24@gmail.com'}
+  ];
+  saveStudents();
+}
+</script>
+<!-- ══ GOOGLE DRIVE SYNC ══ -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
+<script>
+// ── Config ──
+const CLIENT_ID  = '486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
+const SCOPES     = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE = 'mdps-tracker-data.json';
+
+let gapiReady = false;
+let tokenClient = null;
+
+// ── Init GAPI ──
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+    });
+    gapiReady = true;
+    // If we already have a stored token try silent restore
+    const stored = localStorage.getItem('mdps-gdrive-token');
+    if (stored) {
+      try {
+        const tok = JSON.parse(stored);
+        gapi.client.setToken(tok);
+        // Verify still valid
+        await gapi.client.drive.files.list({ spaces:'appDataFolder', fields:'files(id,name)', pageSize:1 });
+        await afterSignIn();
+      } catch(e) {
+        localStorage.removeItem('mdps-gdrive-token');
+        setDriveUI('disconnected');
+      }
+    } else {
+      setDriveUI('disconnected');
+    }
   });
 }
 
-function importStudents(){
-  const file=document.getElementById('excelFile').files[0];
-  if(!file){alert("Select an Excel file first");return;}
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const data=new Uint8Array(e.target.result);
-    const wb=XLSX.read(data,{type:'array'});
-    const sheet=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(sheet,{header:1});
-    STUDENTS=rows.slice(1).map(r=>({
-      id:r[1]||'',
-      name:r[2]||'',
-      email:r[3]||''
-    })).filter(s=>s.name);
-    saveStudents();
-    renderStudents();
-  };
-  reader.readAsArrayBuffer(file);
+// ── Token client (GIS) ──
+function ensureTokenClient() {
+  if (tokenClient) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { setDriveStatus('❌ ' + resp.error); return; }
+      localStorage.setItem('mdps-gdrive-token', JSON.stringify(gapi.client.getToken()));
+      await afterSignIn();
+    }
+  });
 }
 
-// load students on start
-document.addEventListener("DOMContentLoaded",()=>{
-  if(typeof renderStudents==="function") renderStudents();
-});
-</script>
-<button onclick="handleAuthClick()" style="background: #4285F4; color: white; padding: 10px; border-radius: 5px; cursor: pointer; border: none;">
-  Connect Google Drive
-</button>
+// ── Button click ──
+function handleDriveClick() {
+  if (gDriveUser) {
+    if (confirm('Disconnect Google Drive?\n\nYour data stays in localStorage — nothing is deleted from Drive.')) {
+      disconnectDrive();
+    }
+    return;
+  }
+  if (!gapiReady) { setDriveStatus('Loading... please wait'); setTimeout(handleDriveClick, 1200); return; }
+  ensureTokenClient();
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
 
-<script src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script>
-  const CLIENT_ID = '486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
-  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-  let tokenClient;
-
-  function gapiLoaded() {
-    gapi.load('client', async () => {
-      await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+// ── After sign in ──
+async function afterSignIn() {
+  try {
+    setDriveStatus('🔄 Connecting...');
+    // Get user info
+    const uResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + gapi.client.getToken().access_token }
     });
+    const uInfo = await uResp.json();
+    gDriveUser = uInfo;
+    // Find or create the data file
+    gDriveFileId = await findOrCreateFile();
+    // Load data from Drive (Drive is authoritative)
+    await loadFromDrive();
+    setDriveUI('connected');
+    refresh();
+  } catch(e) {
+    console.error('Drive afterSignIn error', e);
+    setDriveStatus('❌ Error: ' + (e.message||'unknown'));
   }
+}
 
-  function gisLoaded() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: async (resp) => {
-        if (resp.error !== undefined) throw (resp);
-        alert("Successfully connected to Google Drive!");
-        // Your logic to load/save data goes here
-      },
+// ── Find or create appDataFolder file ──
+async function findOrCreateFile() {
+  const list = await gapi.client.drive.files.list({
+    spaces: 'appDataFolder',
+    fields: 'files(id,name)',
+    q: `name='${DRIVE_FILE}'`
+  });
+  if (list.result.files && list.result.files.length > 0) {
+    return list.result.files[0].id;
+  }
+  // Create new file with current DB
+  const meta = { name: DRIVE_FILE, parents: ['appDataFolder'] };
+  const body = JSON.stringify(DB);
+  const boundary = '-------314159265358979';
+  const multipart = `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(meta)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${boundary}--`;
+  const resp = await gapi.client.request({
+    path: 'https://www.googleapis.com/upload/drive/v3/files',
+    method: 'POST',
+    params: { uploadType: 'multipart' },
+    headers: { 'Content-Type': `multipart/related; boundary="${boundary}"` },
+    body: multipart
+  });
+  return resp.result.id;
+}
+
+// ── Load from Drive ──
+async function loadFromDrive() {
+  if (!gDriveFileId) return;
+  const resp = await gapi.client.drive.files.get({
+    fileId: gDriveFileId,
+    alt: 'media'
+  });
+  if (resp.body) {
+    try {
+      const remote = JSON.parse(resp.body);
+      // Merge: Drive wins, but keep local settings like theme/photo
+      const localSettings = DB.settings;
+      DB = remote;
+      // Preserve local photo (base64 can be large, not ideal in Drive)
+      if (localSettings.photo && !DB.settings.photo) {
+        DB.settings.photo = localSettings.photo;
+      }
+      localStorage.setItem(SK, JSON.stringify(DB));
+      setDriveStatus('✅ Synced from Drive');
+    } catch(e) {
+      setDriveStatus('⚠️ Could not parse Drive data');
+    }
+  }
+}
+
+// ── Save to Drive ──
+async function saveToDrive() {
+  if (!gDriveUser || !gDriveFileId) return;
+  try {
+    setDriveStatus('🔄 Saving...');
+    // Strip photo from Drive copy (saves space)
+    const saveDB = JSON.parse(JSON.stringify(DB));
+    if (saveDB.settings) saveDB.settings.photo = '';
+    await gapi.client.request({
+      path: `https://www.googleapis.com/upload/drive/v3/files/${gDriveFileId}`,
+      method: 'PATCH',
+      params: { uploadType: 'media' },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(saveDB)
     });
+    setDriveStatus('✅ Saved · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    console.error('Drive save error', e);
+    setDriveStatus('⚠️ Save failed — check connection');
   }
+}
 
-  function handleAuthClick() {
-    tokenClient.requestAccessToken({prompt: 'consent'});
+// ── Disconnect ──
+function disconnectDrive() {
+  const tok = gapi.client.getToken();
+  if (tok) {
+    google.accounts.oauth2.revoke(tok.access_token, () => {});
+    gapi.client.setToken(null);
   }
+  gDriveUser = null;
+  gDriveFileId = null;
+  tokenClient = null;
+  localStorage.removeItem('mdps-gdrive-token');
+  setDriveUI('disconnected');
+}
+
+// ── UI helpers ──
+function setDriveUI(state) {
+  const btn   = document.getElementById('gdrive-btn');
+  const icon  = document.getElementById('gdrive-icon');
+  const label = document.getElementById('gdrive-label');
+  if (!btn) return;
+  if (state === 'connected') {
+    btn.style.borderColor = '#0d7a56';
+    btn.style.color       = '#0d7a56';
+    icon.textContent  = '✅';
+    label.textContent = gDriveUser ? gDriveUser.name.split(' ')[0] + ' · Drive On' : 'Drive Connected';
+    setDriveStatus('✅ Connected');
+  } else {
+    btn.style.borderColor = '';
+    btn.style.color       = '';
+    icon.textContent  = '☁️';
+    label.textContent = 'Connect Google Drive';
+    setDriveStatus('');
+  }
+}
+function setDriveStatus(msg) {
+  const el = document.getElementById('gdrive-status');
+  if (el) el.textContent = msg;
+}
 </script>
+
 </body>
 </html>
