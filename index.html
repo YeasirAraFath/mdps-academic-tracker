@@ -22,37 +22,165 @@
   --r:14px; --rsm:9px; --font:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
   --sb-w:248px; --header-h:68px;
 }
-/* LIGHT MODE OVERRIDES */
+/* ══ LIGHT MODE ══ */
 body.light-mode {
-  --bg:#f0f4ff; --bg2:#e5eaf7; --card:#ffffff; --card2:#f5f7ff;
-  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.16);
-  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
-  --ct:#e03b4a; --assign:#d97706; --present:#5b50e0; --class:#0d9068;
-  --accent:#4f6ef7; --accent2:#7b8fff;
-  --blue:#3b6ff5; --blue2:#6084f7;
-  --green:#16a34a; --green2:#22c55e;
-  --glow:rgba(79,110,247,0.2); --glow-blue:rgba(59,111,245,0.2);
-  --sh:0 1px 4px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.05);
-  --sh2:0 4px 20px rgba(0,0,0,0.12),0 8px 40px rgba(0,0,0,0.07);
+  --bg:#f1f5fb; --bg2:#e4eaf5; --card:#ffffff; --card2:#f7f9ff;
+  --border:rgba(60,80,140,0.12); --border2:rgba(60,80,140,0.22);
+  --text:#0d1526; --text2:#4a5872; --text3:#8a9bb8;
+  --ct:#d63646; --assign:#c47a00; --present:#5048d4; --class:#0a875e;
+  --accent:#3d62f0; --accent2:#6a84f5;
+  --blue:#3d62f0; --blue2:#6a84f5;
+  --green:#0f9f5e; --green2:#2ec47a;
+  --amber:#d97706; --amber2:#f59e0b;
+  --red:#d63646; --purple:#6d5fd6;
+  --glow:rgba(61,98,240,0.18); --glow-blue:rgba(61,98,240,0.2);
+  --sh:0 1px 3px rgba(20,40,100,0.06),0 4px 14px rgba(20,40,100,0.07);
+  --sh2:0 4px 18px rgba(20,40,100,0.11),0 10px 36px rgba(20,40,100,0.08);
 }
-body.light-mode::before{background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(79,110,247,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(13,144,104,0.05) 0%,transparent 50%);}
-body.light-mode::after{background-image:radial-gradient(rgba(79,110,247,0.04) 1px,transparent 1px);background-size:32px 32px;}
-body.light-mode .sidebar{background:rgba(248,250,255,0.97)!important;border-right:1px solid rgba(0,0,0,0.08)!important;}
-body.light-mode .nb:hover{background:rgba(59,111,245,0.07)!important;}
-body.light-mode .nb.active{background:linear-gradient(135deg,rgba(59,111,245,0.14),rgba(59,111,245,0.06))!important;color:var(--blue)!important;border-color:rgba(59,111,245,0.2)!important;}
-body.light-mode .profile-pill{background:linear-gradient(135deg,rgba(59,111,245,0.08),rgba(91,80,224,0.04))!important;border-color:rgba(59,111,245,0.15)!important;}
-body.light-mode .overlay{background:rgba(0,0,0,0.35)!important;}
-body.light-mode .modal{background:#fff!important;border-color:rgba(0,0,0,0.1)!important;}
-body.light-mode .finput{background:#f8faff!important;border-color:rgba(0,0,0,0.12)!important;color:var(--text)!important;}
-body.light-mode .finput:focus{border-color:var(--blue)!important;}
-body.light-mode .term-card{background:#fff!important;}
-body.light-mode .kpi-card{background:#fff!important;}
-body.light-mode .ecard{background:#fff!important;}
-body.light-mode .course-card{background:#fff!important;}
-body.light-mode .teacher-card{background:#fff!important;}
-body.light-mode .scard{background:#fff!important;}
-body.light-mode .topbar-l h2{color:#0f172a;}
-body.light-mode .ng-label{color:#94a3b8!important;}
+
+/* Body background */
+body.light-mode { background: #f1f5fb; }
+body.light-mode::before { background: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(61,98,240,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(10,135,94,0.04) 0%, transparent 50%); }
+body.light-mode::after { background-image: radial-gradient(rgba(61,98,240,0.035) 1px, transparent 1px); background-size: 32px 32px; }
+
+/* Sidebar */
+body.light-mode .sidebar { background: #ffffff !important; border-right: 1px solid rgba(60,80,140,0.1) !important; }
+body.light-mode .sb-logo { border-bottom-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .sb-logo::before { background: linear-gradient(135deg, rgba(61,98,240,0.05), transparent) !important; }
+body.light-mode .sb-logo h1 { color: #0d1526 !important; }
+body.light-mode .sb-logo p { color: #8a9bb8 !important; }
+body.light-mode .sb-logo .ku { color: var(--blue) !important; }
+body.light-mode .sb-crest { background: linear-gradient(135deg, #dde6ff, #eef2ff) !important; border-color: rgba(61,98,240,0.25) !important; }
+body.light-mode .profile-pill { background: linear-gradient(135deg, rgba(61,98,240,0.07), rgba(106,132,245,0.03)) !important; border-color: rgba(61,98,240,0.15) !important; }
+body.light-mode .pp-name { color: #0d1526 !important; }
+body.light-mode .pp-dot { background: #0f9f5e !important; box-shadow: 0 0 6px rgba(15,159,94,0.5) !important; }
+body.light-mode .ng-label { color: #a0afcc !important; }
+body.light-mode .nb { color: #4a5872 !important; }
+body.light-mode .nb:hover { background: rgba(61,98,240,0.07) !important; color: #0d1526 !important; }
+body.light-mode .nb.active { background: linear-gradient(135deg, rgba(61,98,240,0.12), rgba(61,98,240,0.06)) !important; color: var(--blue) !important; border-color: rgba(61,98,240,0.2) !important; box-shadow: 0 2px 10px rgba(61,98,240,0.1) !important; }
+body.light-mode .nb .nc { background: rgba(61,98,240,0.1) !important; color: var(--blue) !important; }
+body.light-mode .nb.active .nc { background: rgba(61,98,240,0.18) !important; }
+body.light-mode .set-btn { background: #f5f7ff !important; border-color: rgba(61,98,240,0.15) !important; color: #4a5872 !important; }
+body.light-mode .set-btn:hover { background: rgba(61,98,240,0.08) !important; color: var(--blue) !important; border-color: rgba(61,98,240,0.3) !important; }
+body.light-mode .sb-footer { border-top-color: rgba(60,80,140,0.1) !important; }
+
+/* Topbar */
+body.light-mode .topbar-l h2 { color: #0d1526 !important; }
+body.light-mode .topbar-l p { color: #8a9bb8 !important; }
+
+/* Buttons */
+body.light-mode .btn-ghost { background: #ffffff !important; border-color: rgba(60,80,140,0.16) !important; color: #4a5872 !important; }
+body.light-mode .btn-ghost:hover { background: rgba(61,98,240,0.06) !important; color: var(--blue) !important; border-color: rgba(61,98,240,0.28) !important; }
+body.light-mode .btn-danger { border-color: rgba(60,80,140,0.16) !important; color: #8a9bb8 !important; }
+body.light-mode .btn-danger:hover { border-color: var(--ct) !important; color: var(--ct) !important; }
+
+/* Cards - term, kpi, task, activity, prog */
+body.light-mode .term-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .tc-item .tc-l { color: #a0afcc !important; }
+body.light-mode .tc-item .tc-v { color: #0d1526 !important; }
+body.light-mode .kpi-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; box-shadow: 0 2px 12px rgba(20,40,100,0.07) !important; }
+body.light-mode .kpi-card::before { background: linear-gradient(135deg, rgba(61,98,240,0.03), transparent) !important; }
+body.light-mode .kpi-card:hover { box-shadow: 0 6px 24px rgba(20,40,100,0.12) !important; }
+body.light-mode .kpi-label { color: #8a9bb8 !important; }
+body.light-mode .kpi-title { color: #0d1526 !important; }
+body.light-mode .kpi-sub { color: #4a5872 !important; }
+body.light-mode .kpi-date { border-top-color: rgba(60,80,140,0.1) !important; color: #8a9bb8 !important; }
+body.light-mode .ptask-row { background: rgba(61,98,240,0.04) !important; border-color: rgba(61,98,240,0.1) !important; }
+body.light-mode .ptask-row:hover { background: rgba(61,98,240,0.1) !important; }
+body.light-mode .ptask-label { color: #0d1526 !important; }
+body.light-mode .task-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; box-shadow: 0 1px 6px rgba(20,40,100,0.06) !important; }
+body.light-mode .task-card:hover { border-color: rgba(61,98,240,0.28) !important; box-shadow: 0 4px 18px rgba(20,40,100,0.1) !important; }
+body.light-mode .tc-name { color: #0d1526 !important; }
+body.light-mode .tc-course { color: #6a7d9a !important; }
+body.light-mode .tc-check { border-color: rgba(60,80,140,0.2) !important; }
+body.light-mode .activity-panel { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .act-item { border-bottom-color: rgba(60,80,140,0.08) !important; }
+body.light-mode .act-title { color: #0d1526 !important; }
+body.light-mode .act-sub { color: #6a7d9a !important; }
+body.light-mode .act-time { color: #a0afcc !important; }
+body.light-mode .act-viewall { border-top-color: rgba(60,80,140,0.08) !important; }
+body.light-mode .prog-card,
+body.light-mode .prog-right-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; box-shadow: 0 2px 12px rgba(20,40,100,0.07) !important; }
+body.light-mode .bar-track,
+body.light-mode .prc-bar { background: rgba(61,98,240,0.08) !important; }
+body.light-mode .prc-item { background: rgba(61,98,240,0.03) !important; border-color: rgba(61,98,240,0.08) !important; }
+body.light-mode .prc-item:hover { background: rgba(61,98,240,0.09) !important; border-color: rgba(61,98,240,0.2) !important; }
+body.light-mode .prc-name { color: #0d1526 !important; }
+body.light-mode .prc-count { color: #6a7d9a !important; }
+
+/* Event cards */
+body.light-mode .ecard { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; box-shadow: 0 1px 4px rgba(20,40,100,0.06) !important; }
+body.light-mode .ecard:hover { border-color: rgba(61,98,240,0.3) !important; box-shadow: 0 4px 16px rgba(20,40,100,0.1) !important; }
+body.light-mode .etitle { color: #0d1526 !important; }
+body.light-mode .emeta-txt { color: #8a9bb8 !important; }
+body.light-mode .ttag { background: rgba(61,98,240,0.06) !important; border-color: rgba(61,98,240,0.14) !important; color: #4a5872 !important; }
+body.light-mode .ttag:hover { border-color: var(--blue) !important; color: var(--blue) !important; }
+body.light-mode .semtag { background: rgba(61,98,240,0.06) !important; border-color: rgba(61,98,240,0.12) !important; }
+body.light-mode .b-ct { background: rgba(214,54,70,0.1) !important; }
+body.light-mode .b-assignment { background: rgba(196,122,0,0.1) !important; }
+body.light-mode .b-presentation { background: rgba(80,72,212,0.1) !important; }
+body.light-mode .b-class { background: rgba(10,135,94,0.1) !important; }
+body.light-mode .cd-u { background: rgba(214,54,70,0.1) !important; }
+body.light-mode .cd-s { background: rgba(196,122,0,0.1) !important; }
+body.light-mode .cd-ok { background: rgba(10,135,94,0.1) !important; }
+body.light-mode .cd-p { background: rgba(61,98,240,0.07) !important; }
+body.light-mode .ab { border-color: rgba(60,80,140,0.16) !important; color: #8a9bb8 !important; }
+
+/* Chips */
+body.light-mode .chip { background: #ffffff !important; border-color: rgba(60,80,140,0.14) !important; color: #4a5872 !important; }
+body.light-mode .chip:hover { border-color: rgba(61,98,240,0.3) !important; color: var(--blue) !important; }
+
+/* Stats */
+body.light-mode .scard { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .scard .sl { color: #8a9bb8 !important; }
+body.light-mode .scard .ss { color: #8a9bb8 !important; }
+body.light-mode .mini-bar { background: rgba(61,98,240,0.08) !important; }
+
+/* Alert */
+body.light-mode .alert { background: rgba(214,54,70,0.05) !important; border-color: rgba(214,54,70,0.2) !important; }
+
+/* Schedule card */
+body.light-mode .schedule-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .sch-slot { background: rgba(61,98,240,0.05) !important; }
+body.light-mode .sch-time { color: #8a9bb8 !important; }
+body.light-mode .sch-name { color: #0d1526 !important; }
+body.light-mode .sch-teacher { color: #6a7d9a !important; }
+
+/* Countdown cards */
+body.light-mode .cdw-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .cdw-card.urgent { background: rgba(214,54,70,0.05) !important; border-color: rgba(214,54,70,0.2) !important; }
+body.light-mode .cdw-card.soon { background: rgba(196,122,0,0.05) !important; border-color: rgba(196,122,0,0.2) !important; }
+body.light-mode .cdw-card.ok { background: rgba(10,135,94,0.05) !important; border-color: rgba(10,135,94,0.18) !important; }
+body.light-mode .cdw-title { color: #0d1526 !important; }
+
+/* Courses */
+body.light-mode .course-card,
+body.light-mode .crs-notes-wrap { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+body.light-mode .crs-notes { background: rgba(61,98,240,0.04) !important; border-color: rgba(61,98,240,0.12) !important; color: #0d1526 !important; }
+
+/* Teachers */
+body.light-mode .teacher-card { background: #ffffff !important; border-color: rgba(60,80,140,0.1) !important; }
+
+/* Modal & overlays */
+body.light-mode .overlay { background: rgba(10,20,60,0.4) !important; }
+body.light-mode .modal { background: #ffffff !important; border-color: rgba(60,80,140,0.12) !important; box-shadow: 0 8px 40px rgba(10,20,60,0.15) !important; }
+body.light-mode .modal h3 { color: #0d1526 !important; }
+body.light-mode .frow label { color: #4a5872 !important; }
+body.light-mode .finput { background: #f4f7ff !important; border-color: rgba(60,80,140,0.16) !important; color: #0d1526 !important; }
+body.light-mode .finput:focus { border-color: var(--blue) !important; background: #ffffff !important; }
+body.light-mode .finput::placeholder { color: #a0afcc !important; }
+
+/* Search box */
+body.light-mode .sbox input { background: #ffffff !important; border-color: rgba(60,80,140,0.14) !important; color: #0d1526 !important; }
+body.light-mode .sb2 { background: #ffffff !important; border-color: rgba(60,80,140,0.14) !important; color: #8a9bb8 !important; }
+body.light-mode .sb2.active { background: var(--blue) !important; color: #fff !important; border-color: var(--blue) !important; }
+
+/* Mobile toggle button */
+body.light-mode .sb-overlay { background: rgba(10,20,60,0.45) !important; }
+
+/* Scrollbar */
+body.light-mode ::-webkit-scrollbar-thumb { background: rgba(61,98,240,0.2) !important; }
+
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{font-size:17px;scroll-behavior:smooth;}
@@ -544,7 +672,7 @@ select.finput{cursor:pointer;}
       <span id="gdrive-icon">☁️</span>
       <span id="gdrive-label">Connect Google Drive</span>
     </button>
-    <div id="gdrive-status" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;"></div>
+    <div id="gdrive-status" onclick="copyShareUrl()" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;cursor:pointer;"></div>
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
       👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
     </div>
@@ -1821,41 +1949,118 @@ async function loadFromDrive() {
 }
 
 async function publishPublicSnapshot() {
-  const token=gapi.client.getToken()?.access_token; if(!token) return;
+  const token = gapi.client.getToken()?.access_token;
+  if(!token) return;
   try {
-    const pubData={events:DB.events,teachers:DB.teachers,courseNotes:DB.courseNotes,settings:{name:DB.settings.name,id:DB.settings.id,program:DB.settings.program,photo:DB.settings.photo,publicFileId:DB.settings.publicFileId||''},_published:new Date().toISOString()};
-    let pubFileId=DB.settings.publicFileId||localStorage.getItem('mdps-public-file-id')||'';
-    if(!pubFileId){
-      const boundary='-------271828182845';const CRLF='\r\n';
-      const meta={name:'mdps-tracker-public.json'};
-      const mp='--'+boundary+CRLF+'Content-Type: application/json'+CRLF+CRLF+JSON.stringify(meta)+CRLF+'--'+boundary+CRLF+'Content-Type: application/json'+CRLF+CRLF+JSON.stringify(pubData)+CRLF+'--'+boundary+'--';
-      const cr=await gapi.client.request({path:'https://www.googleapis.com/upload/drive/v3/files',method:'POST',params:{uploadType:'multipart'},headers:{'Content-Type':'multipart/related; boundary="'+boundary+'"'},body:mp});
-      pubFileId=cr.result.id;
-      await gapi.client.request({path:`https://www.googleapis.com/drive/v3/files/${pubFileId}/permissions`,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
-      localStorage.setItem('mdps-public-file-id',pubFileId);
-      DB.settings.publicFileId=pubFileId;BAKED_PUBLIC_FILE_ID=pubFileId;persist();
+    const pubData = {
+      events: DB.events,
+      teachers: DB.teachers,
+      courseNotes: DB.courseNotes,
+      settings: { name: DB.settings.name, id: DB.settings.id, program: DB.settings.program, photo: DB.settings.photo, publicFileId: DB.settings.publicFileId || '' },
+      _published: new Date().toISOString(),
+      _v: Date.now() // version stamp so cache is always busted
+    };
+    let pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+
+    if(!pubFileId) {
+      // Create the public file
+      const boundary = '-------271828182845'; const CRLF = '\r\n';
+      const meta = { name: 'mdps-tracker-public.json' };
+      const mp = '--'+boundary+CRLF+'Content-Type: application/json'+CRLF+CRLF+JSON.stringify(meta)+CRLF+'--'+boundary+CRLF+'Content-Type: application/json'+CRLF+CRLF+JSON.stringify(pubData)+CRLF+'--'+boundary+'--';
+      const cr = await gapi.client.request({ path: 'https://www.googleapis.com/upload/drive/v3/files', method: 'POST', params: { uploadType: 'multipart' }, headers: { 'Content-Type': 'multipart/related; boundary="'+boundary+'"' }, body: mp });
+      pubFileId = cr.result.id;
+      // Make it public readable
+      await gapi.client.request({ path: `https://www.googleapis.com/drive/v3/files/${pubFileId}/permissions`, method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+      // Set no-cache so friends always get fresh data
+      await gapi.client.request({ path: `https://www.googleapis.com/drive/v3/files/${pubFileId}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ } ) });
+      localStorage.setItem('mdps-public-file-id', pubFileId);
+      DB.settings.publicFileId = pubFileId;
+      BAKED_PUBLIC_FILE_ID = pubFileId;
+      persist();
+      // Show share URL
+      const shareUrl = `${location.origin}${location.pathname}?view=1&id=${pubFileId}`;
+      localStorage.setItem('mdps-share-url', shareUrl);
     } else {
-      await gapi.client.request({path:`https://www.googleapis.com/upload/drive/v3/files/${pubFileId}`,method:'PATCH',params:{uploadType:'media'},headers:{'Content-Type':'application/json'},body:JSON.stringify(pubData)});
-      BAKED_PUBLIC_FILE_ID=pubFileId;
+      // Always overwrite with latest data - no multipart, just media upload
+      await gapi.client.request({
+        path: `https://www.googleapis.com/upload/drive/v3/files/${pubFileId}`,
+        method: 'PATCH',
+        params: { uploadType: 'media' },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pubData)
+      });
+      BAKED_PUBLIC_FILE_ID = pubFileId;
     }
-    setDriveStatus('✅ Live · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
-  } catch(e){ console.warn('Public publish failed',e);setDriveStatus('✅ Saved'); }
+    setDriveStatus('✅ Synced · ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    updateShareUrl(pubFileId);
+  } catch(e) {
+    console.warn('Public publish failed:', e);
+    setDriveStatus('✅ Saved locally');
+  }
+}
+
+function updateShareUrl(fileId) {
+  if(!fileId) return;
+  const url = `${location.origin}${location.pathname}?view=1&id=${fileId}`;
+  localStorage.setItem('mdps-share-url', url);
+  const el = document.getElementById('gdrive-status');
+  if(el && gDriveUser) el.title = 'Share: ' + url;
 }
 
 async function tryLoadPublicData() {
-  const pubFileId=BAKED_PUBLIC_FILE_ID||DB.settings.publicFileId||localStorage.getItem('mdps-public-file-id');
-  if(!pubFileId){setOwnerMode(false);showViewOnlyNotice('Yeasir');return;}
+  const pubFileId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if(!pubFileId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
   try {
     setDriveStatus('🔄 Loading...');
-    let pubData; let fetched=false;
-    for(const url of [`https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media`,`https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=1`]){
-      try{const r=await fetch(url);if(r.ok){pubData=await r.json();fetched=true;break;}}catch{}
+    const cacheBust = Date.now();
+    // Try multiple public URLs with cache-busting to always get latest
+    const urls = [
+      `https://drive.google.com/uc?export=download&id=${pubFileId}&t=${cacheBust}`,
+      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=1&t=${cacheBust}`,
+      `https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media&t=${cacheBust}`,
+    ];
+    let pubData = null;
+    for(const url of urls) {
+      try {
+        const r = await fetch(url, { cache: 'no-store' });
+        if(r.ok) { pubData = await r.json(); break; }
+      } catch(e) {}
     }
-    if(!fetched) throw new Error('fetch failed');
-    DB={events:pubData.events||DB.events,teachers:pubData.teachers||DB.teachers,courseNotes:pubData.courseNotes||DB.courseNotes,settings:{...DB.settings,...pubData.settings,publicFileId:pubFileId}};
-    setOwnerMode(false);showViewOnlyNotice(DB.settings.name);setDriveStatus('');refresh();updateSb();
-  } catch(e){ console.warn(e);setOwnerMode(false);showViewOnlyNotice('Yeasir');setDriveStatus(''); }
+    if(!pubData) throw new Error('All fetch attempts failed');
+    DB = {
+      events: pubData.events || DB.events,
+      teachers: pubData.teachers || DB.teachers,
+      courseNotes: pubData.courseNotes || DB.courseNotes,
+      settings: { ...DB.settings, ...pubData.settings, publicFileId: pubFileId }
+    };
+    setOwnerMode(false);
+    showViewOnlyNotice(DB.settings.name);
+    setDriveStatus('');
+    refresh(); updateSb();
+    // Auto-refresh every 60 seconds so friend always sees latest data
+    setTimeout(tryLoadPublicData, 60000);
+  } catch(e) {
+    console.warn('Public load failed:', e);
+    setOwnerMode(false);
+    showViewOnlyNotice('AraFath');
+    setDriveStatus('⚠️ Could not load');
+    // Retry after 30s
+    setTimeout(tryLoadPublicData, 30000);
+  }
 }
+function copyShareUrl() {
+  const url = localStorage.getItem('mdps-share-url');
+  if(!url || !gDriveUser) return;
+  navigator.clipboard.writeText(url).then(()=>{
+    const el = document.getElementById('gdrive-status');
+    const prev = el.textContent;
+    el.textContent = '📋 Link copied!';
+    setTimeout(()=>{ el.textContent = prev; }, 2000);
+  }).catch(()=>{
+    prompt('Share this link with friends:', url);
+  });
+}
+
 function showViewOnlyNotice(n){const el=document.getElementById('view-only-notice');const ne=document.getElementById('owner-name-display');if(el)el.style.display='block';if(ne&&n)ne.textContent=n.split(' ')[0];}
 function hideViewOnlyNotice(){const el=document.getElementById('view-only-notice');if(el)el.style.display='none';}
 
@@ -1864,9 +2069,16 @@ window.addEventListener('load', ()=>{
   applyTheme();
   updateSb();
   renderDash();
-  // Check for public view
-  const isView = new URLSearchParams(location.search).get('view');
+  const params = new URLSearchParams(location.search);
+  const isView = params.get('view');
+  const urlFileId = params.get('id');
   if(isView) {
+    // If file ID is in the URL, use it directly
+    if(urlFileId) {
+      BAKED_PUBLIC_FILE_ID = urlFileId;
+      DB.settings.publicFileId = urlFileId;
+      localStorage.setItem('mdps-public-file-id', urlFileId);
+    }
     tryLoadPublicData();
   } else {
     setOwnerMode(true);
@@ -1878,8 +2090,8 @@ window.addEventListener('load', ()=>{
     }
   }
   // Close overlays on bg click
-  document.querySelectorAll('.overlay').forEach(o=>{
-    o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
+  document.querySelectorAll('.overlay').forEach(o => {
+    o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
   });
 });
 </script>
