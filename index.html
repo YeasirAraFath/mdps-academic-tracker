@@ -1965,11 +1965,14 @@ async function loadFromDrive() {
   } catch(e){ console.warn('Drive load err',e); }
 }
 
-// ── PUBLIC SHARING via npoint.io ──
-const NPOINT_BASE = 'https://api.npoint.io';
+// ── PUBLIC SHARING ──
+// Uses Google Drive API (with your auth token) to WRITE data,
+// and allorigins.win proxy to READ it — this solves CORS completely.
 
 async function publishPublicSnapshot() {
   if(!gDriveUser) return;
+  const token = gapi.client.getToken()?.access_token;
+  if(!token) return;
   try {
     const pubData = {
       events: DB.events,
@@ -1979,41 +1982,64 @@ async function publishPublicSnapshot() {
       _published: new Date().toISOString(),
       _v: Date.now()
     };
-    let binId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
-    if(!binId) {
-      const res = await fetch('https://api.npoint.io/', {
+
+    let pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+
+    if(!pubFileId) {
+      // Step 1: Create file
+      const boundary = '-------mdpsboundary123';
+      const meta = JSON.stringify({ name: 'mdps-tracker-public.json' });
+      const body = '--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + meta +
+                   '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(pubData) +
+                   '\r\n--' + boundary + '--';
+      const cr = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pubData)
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+        },
+        body: body
       });
-      if(!res.ok) throw new Error('Create failed: ' + res.status);
-      const json = await res.json();
-      binId = json.id;
-      DB.settings.publicFileId = binId;
-      BAKED_PUBLIC_FILE_ID = binId;
-      localStorage.setItem('mdps-public-file-id', binId);
-      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + binId);
+      if(!cr.ok) throw new Error('Create failed: ' + cr.status);
+      const crJson = await cr.json();
+      pubFileId = crJson.id;
+
+      // Step 2: Make it public (anyone can read)
+      await fetch('https://www.googleapis.com/drive/v3/files/' + pubFileId + '/permissions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      });
+
+      DB.settings.publicFileId = pubFileId;
+      BAKED_PUBLIC_FILE_ID = pubFileId;
+      localStorage.setItem('mdps-public-file-id', pubFileId);
+      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + pubFileId);
       persist();
     } else {
-      const res = await fetch('https://api.npoint.io/' + binId, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // Update existing file content
+      const upd = await fetch('https://www.googleapis.com/upload/drive/v3/files/' + pubFileId + '?uploadType=media', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(pubData)
       });
-      if(!res.ok) throw new Error('Update failed: ' + res.status);
-      BAKED_PUBLIC_FILE_ID = binId;
+      if(!upd.ok) throw new Error('Update failed: ' + upd.status);
+      BAKED_PUBLIC_FILE_ID = pubFileId;
     }
     setDriveStatus('\u2705 Synced \u00b7 ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + binId);
+    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + pubFileId);
   } catch(e) {
     console.warn('Publish failed:', e);
-    setDriveStatus('\u26a0\ufe0f Sync failed');
+    setDriveStatus('\u26a0\ufe0f Sync failed: ' + e.message);
   }
 }
 
-function updateShareUrl(binId) {
-  if(!binId) return;
-  localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + binId);
+function updateShareUrl(id) {
+  if(!id) return;
+  localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + id);
 }
 
 function getRelativeTime(iso) {
@@ -2024,28 +2050,35 @@ function getRelativeTime(iso) {
   if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
   return Math.floor(diff/86400) + 'd ago';
 }
+
 function showLastUpdated(iso) {
   const el = document.getElementById('last-updated-display');
   if(!el || !iso) return;
   const d = new Date(iso);
   const fmt = d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ', ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  el.textContent = '\u{1F550} Updated ' + getRelativeTime(iso) + ' (' + fmt + ')';
+  el.textContent = '\ud83d\udd50 Updated ' + getRelativeTime(iso) + ' (' + fmt + ')';
 }
 
 async function tryLoadPublicData() {
-  const binId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
-  if(!binId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
+  const pubFileId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if(!pubFileId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
   try {
-    setDriveStatus('\u{1F504} Loading...');
-    const r = await fetch('https://api.npoint.io/' + binId, { cache: 'no-store' });
-    if(!r.ok) throw new Error('Fetch failed: ' + r.status);
-    const pubData = await r.json();
-    if(!pubData || !pubData.events) throw new Error('Invalid data');
+    setDriveStatus('\ud83d\udd04 Loading...');
+    const cb = Date.now();
+    // allorigins.win is a CORS proxy that reliably fetches Google Drive public files
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://drive.google.com/uc?export=download&id=' + pubFileId + '&t=' + cb);
+    const r = await fetch(proxyUrl, { cache: 'no-store' });
+    if(!r.ok) throw new Error('Proxy fetch failed: ' + r.status);
+    const text = await r.text();
+    const trimmed = text.trim();
+    if(!trimmed.startsWith('{')) throw new Error('Not JSON: ' + trimmed.substring(0, 80));
+    const pubData = JSON.parse(trimmed);
+    if(!pubData.events) throw new Error('Missing events');
     DB = {
-      events: pubData.events || DB.events,
+      events: pubData.events,
       teachers: pubData.teachers || DB.teachers,
       courseNotes: pubData.courseNotes || DB.courseNotes,
-      settings: { ...DB.settings, ...pubData.settings, publicFileId: binId }
+      settings: { ...DB.settings, ...pubData.settings, publicFileId: pubFileId }
     };
     setOwnerMode(false);
     showViewOnlyNotice(DB.settings.name);
@@ -2054,7 +2087,7 @@ async function tryLoadPublicData() {
     refresh(); updateSb();
     setTimeout(tryLoadPublicData, 30000);
   } catch(e) {
-    console.warn('Public load failed:', e);
+    console.warn('Load failed:', e);
     setOwnerMode(false);
     showViewOnlyNotice('AraFath');
     setDriveStatus('\u26a0\ufe0f Could not load \u2014 retrying...');
@@ -2065,12 +2098,12 @@ async function tryLoadPublicData() {
 function copyShareUrl() {
   const url = localStorage.getItem('mdps-share-url');
   if(!url || !gDriveUser) return;
-  navigator.clipboard.writeText(url).then(()=>{
+  navigator.clipboard.writeText(url).then(() => {
     const el = document.getElementById('gdrive-status');
     const prev = el.textContent;
-    el.textContent = '\u{1F4CB} Link copied!';
-    setTimeout(()=>{ el.textContent = prev; }, 2000);
-  }).catch(()=>{
+    el.textContent = '\ud83d\udccb Link copied!';
+    setTimeout(() => { el.textContent = prev; }, 2000);
+  }).catch(() => {
     prompt('Share this link with friends:', url);
   });
 }
