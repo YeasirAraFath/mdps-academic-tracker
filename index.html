@@ -1965,10 +1965,8 @@ async function loadFromDrive() {
   } catch(e){ console.warn('Drive load err',e); }
 }
 
-// ── JSONBIN SHARING (replaces Google Drive public sharing) ──
-// JSONBin.io is a free JSON storage service with proper CORS — works perfectly in browsers
-const JSONBIN_API_KEY = '$2a$10$mMECUHbIMBe7BRvqkNzKPuW5H3amBaXwk7p0CRFr3rYzB6U2BHiHa';
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
+// ── PUBLIC SHARING via npoint.io ──
+const NPOINT_BASE = 'https://api.npoint.io';
 
 async function publishPublicSnapshot() {
   if(!gDriveUser) return;
@@ -1981,53 +1979,41 @@ async function publishPublicSnapshot() {
       _published: new Date().toISOString(),
       _v: Date.now()
     };
-
     let binId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
-
     if(!binId) {
-      // Create a new public bin
-      const res = await fetch(`${JSONBIN_BASE}/b`, {
+      const res = await fetch('https://api.npoint.io/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': JSONBIN_API_KEY,
-          'X-Bin-Name': 'mdps-tracker',
-          'X-Bin-Private': 'false'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pubData)
       });
+      if(!res.ok) throw new Error('Create failed: ' + res.status);
       const json = await res.json();
-      binId = json.metadata.id;
+      binId = json.id;
       DB.settings.publicFileId = binId;
       BAKED_PUBLIC_FILE_ID = binId;
       localStorage.setItem('mdps-public-file-id', binId);
-      const shareUrl = `${location.origin}${location.pathname}?view=1&id=${binId}`;
-      localStorage.setItem('mdps-share-url', shareUrl);
+      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + binId);
       persist();
     } else {
-      // Update existing bin
-      await fetch(`${JSONBIN_BASE}/b/${binId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': JSONBIN_API_KEY
-        },
+      const res = await fetch('https://api.npoint.io/' + binId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pubData)
       });
+      if(!res.ok) throw new Error('Update failed: ' + res.status);
       BAKED_PUBLIC_FILE_ID = binId;
     }
-    setDriveStatus('✅ Synced · ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    updateShareUrl(binId);
+    setDriveStatus('\u2705 Synced \u00b7 ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + binId);
   } catch(e) {
-    console.warn('Public publish failed:', e);
-    setDriveStatus('⚠️ Sync failed');
+    console.warn('Publish failed:', e);
+    setDriveStatus('\u26a0\ufe0f Sync failed');
   }
 }
 
 function updateShareUrl(binId) {
   if(!binId) return;
-  const url = `${location.origin}${location.pathname}?view=1&id=${binId}`;
-  localStorage.setItem('mdps-share-url', url);
+  localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + binId);
 }
 
 function getRelativeTime(iso) {
@@ -2043,22 +2029,17 @@ function showLastUpdated(iso) {
   if(!el || !iso) return;
   const d = new Date(iso);
   const fmt = d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ', ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  el.textContent = '🕐 Updated ' + getRelativeTime(iso) + ' (' + fmt + ')';
+  el.textContent = '\u{1F550} Updated ' + getRelativeTime(iso) + ' (' + fmt + ')';
 }
 
 async function tryLoadPublicData() {
   const binId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
   if(!binId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
   try {
-    setDriveStatus('🔄 Loading...');
-    // JSONBin has proper CORS — works perfectly from any browser
-    const r = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
-      cache: 'no-store',
-      headers: { 'X-Master-Key': JSONBIN_API_KEY }
-    });
-    if(!r.ok) throw new Error('JSONBin fetch failed: ' + r.status);
-    const json = await r.json();
-    const pubData = json.record;
+    setDriveStatus('\u{1F504} Loading...');
+    const r = await fetch('https://api.npoint.io/' + binId, { cache: 'no-store' });
+    if(!r.ok) throw new Error('Fetch failed: ' + r.status);
+    const pubData = await r.json();
     if(!pubData || !pubData.events) throw new Error('Invalid data');
     DB = {
       events: pubData.events || DB.events,
@@ -2076,17 +2057,18 @@ async function tryLoadPublicData() {
     console.warn('Public load failed:', e);
     setOwnerMode(false);
     showViewOnlyNotice('AraFath');
-    setDriveStatus('⚠️ Could not load — retrying...');
+    setDriveStatus('\u26a0\ufe0f Could not load \u2014 retrying...');
     setTimeout(tryLoadPublicData, 20000);
   }
 }
+
 function copyShareUrl() {
   const url = localStorage.getItem('mdps-share-url');
   if(!url || !gDriveUser) return;
   navigator.clipboard.writeText(url).then(()=>{
     const el = document.getElementById('gdrive-status');
     const prev = el.textContent;
-    el.textContent = '📋 Link copied!';
+    el.textContent = '\u{1F4CB} Link copied!';
     setTimeout(()=>{ el.textContent = prev; }, 2000);
   }).catch(()=>{
     prompt('Share this link with friends:', url);
