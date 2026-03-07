@@ -51,7 +51,7 @@ body.light-mode .sb-logo h1 { color: #0d1526 !important; }
 body.light-mode .sb-logo p { color: #8a9bb8 !important; }
 body.light-mode .sb-logo .ku { color: var(--blue) !important; }
 body.light-mode .sb-crest { background: linear-gradient(135deg, #dde6ff, #eef2ff) !important; border-color: rgba(61,98,240,0.25) !important; }
-body.light-mode .profile-pill { background: linear-gradient(135deg, rgba(61,98,240,0.07), rgba(106,132,245,0.03)) !important; border-color: rgba(61,98,240,0.15) !important; }
+body.light-mode .profile-pill { background: linear-gradient(135deg, rgba(61,98,240,0.09), rgba(106,132,245,0.04)) !important; border-color: rgba(61,98,240,0.22) !important; box-shadow: 0 2px 14px rgba(61,98,240,0.06) !important; }
 body.light-mode .pp-name { color: #0d1526 !important; }
 body.light-mode .pp-dot { background: #0f9f5e !important; box-shadow: 0 0 6px rgba(15,159,94,0.5) !important; }
 body.light-mode .ng-label { color: #a0afcc !important; }
@@ -240,14 +240,15 @@ body.owner-mode .owner-badge{display:flex;}
 .sb-badge-row{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.35rem;}
 
 /* Profile pill */
-.profile-pill{margin:0.8rem 0.9rem;background:linear-gradient(135deg,rgba(79,124,255,0.1),rgba(129,140,248,0.05));border-radius:var(--r);padding:0.65rem 0.75rem;display:flex;align-items:center;gap:0.7rem;cursor:pointer;transition:all 0.15s;border:1px solid rgba(79,124,255,0.2);}
-.profile-pill:hover{border-color:var(--blue);box-shadow:0 0 16px var(--glow-blue);}
-.pp-av{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;position:relative;border:1.5px solid rgba(79,124,255,0.3);}
+.profile-pill{margin:0.8rem 0.9rem;background:linear-gradient(135deg,rgba(79,124,255,0.14),rgba(129,140,248,0.07));border-radius:var(--r);padding:0.75rem 0.85rem;display:flex;align-items:center;gap:0.75rem;cursor:pointer;transition:all 0.18s;border:1px solid rgba(79,124,255,0.28);box-shadow:0 2px 16px rgba(79,124,255,0.08);}
+.profile-pill:hover{border-color:var(--blue);box-shadow:0 0 22px var(--glow-blue),0 2px 12px rgba(0,0,0,0.3);}
+.pp-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--accent));color:#fff;font-size:0.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;position:relative;border:2px solid rgba(79,124,255,0.45);box-shadow:0 0 10px rgba(79,124,255,0.3);}
 .pp-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .pp-info{min-width:0;}
-.pp-name{font-size:0.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pp-id{font-size:0.6rem;color:var(--text3);font-family:var(--mono);}
-.pp-dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 6px var(--green);flex-shrink:0;}
+.pp-name{font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.pp-id{font-size:0.6rem;color:var(--text3);font-family:var(--mono);margin-top:1px;}
+.pp-dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 8px var(--green),0 0 4px var(--green);flex-shrink:0;animation:pulse-dot 2.5s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 6px var(--green);}50%{box-shadow:0 0 12px var(--green),0 0 20px rgba(34,197,94,0.4);}}
 
 /* Nav */
 .sb-nav{padding:0.5rem 0.7rem;flex:1;}
@@ -255,7 +256,10 @@ body.owner-mode .owner-badge{display:flex;}
 .nb{display:flex;align-items:center;gap:0.6rem;width:100%;padding:0.5rem 0.72rem;border-radius:var(--rsm);border:none;background:none;color:var(--text2);font-family:var(--font);font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.13s;text-align:left;margin-bottom:1px;position:relative;}
 .nb:hover{background:rgba(255,255,255,0.05);color:var(--text);}
 .nb.active{background:linear-gradient(135deg,rgba(79,124,255,0.18),rgba(79,124,255,0.08));color:var(--blue2);font-weight:600;border:1px solid rgba(79,124,255,0.22);box-shadow:0 2px 12px rgba(79,124,255,0.1);}
-.nb .ni{font-size:0.85rem;width:16px;flex-shrink:0;}
+.nb .ni{font-size:0.85rem;width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.nb .ni svg{width:15px;height:15px;flex-shrink:0;opacity:0.7;transition:opacity 0.13s;}
+.nb:hover .ni svg{opacity:1;}
+.nb.active .ni svg{opacity:1;}
 .nb .ndot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .nb .nc{margin-left:auto;font-size:0.6rem;font-family:var(--mono);background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:999px;}
 .nb.active .nc{background:rgba(79,124,255,0.22);color:var(--blue2);}
@@ -379,11 +383,11 @@ body.owner-mode .owner-badge{display:flex;}
 .task-card{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:var(--r);padding:0.85rem 1rem;display:flex;align-items:center;gap:0.9rem;cursor:pointer;transition:all 0.2s ease;position:relative;overflow:hidden;animation:fadeUp 0.35s ease both;}
 .task-card:nth-child(1){animation-delay:0.1s;} .task-card:nth-child(2){animation-delay:0.17s;} .task-card:nth-child(3){animation-delay:0.24s;} .task-card:nth-child(4){animation-delay:0.31s;}
 .task-card:hover{border-color:rgba(79,124,255,0.3);box-shadow:0 4px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(79,124,255,0.1);transform:translateY(-1px);}
-.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0;}
-.task-card.assign::before{background:linear-gradient(to bottom,var(--blue),var(--blue2));}
-.task-card.test::before{background:linear-gradient(to bottom,var(--amber),var(--amber2));}
-.task-card.present::before{background:linear-gradient(to bottom,var(--purple),#c084fc);}
-.task-card.class-ev::before{background:linear-gradient(to bottom,var(--green),var(--green2));}
+.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 3px 3px 0;}
+.task-card.assign::before{background:linear-gradient(to bottom,var(--blue),var(--blue2));box-shadow:2px 0 10px rgba(79,124,255,0.4);}
+.task-card.test::before{background:linear-gradient(to bottom,var(--ct),#ff8a93);box-shadow:2px 0 10px rgba(255,94,108,0.4);}
+.task-card.present::before{background:linear-gradient(to bottom,var(--purple),#c084fc);box-shadow:2px 0 10px rgba(167,139,250,0.4);}
+.task-card.class-ev::before{background:linear-gradient(to bottom,var(--green),var(--green2));box-shadow:2px 0 10px rgba(34,197,94,0.4);}
 .tc-icon{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;}
 .tc-icon.blue{background:rgba(79,124,255,0.12);border:1px solid rgba(79,124,255,0.2);}
 .tc-icon.amber{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);}
@@ -601,8 +605,29 @@ select.finput{cursor:pointer;}
 .page-placeholder .pl-title{font-size:1.1rem;font-weight:700;color:var(--text2);}
 .page-placeholder .pl-sub{font-size:0.78rem;color:var(--text3);}
 
+/* Beautiful empty state for task list */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;gap:0.8rem;text-align:center;}
+.empty-state svg{opacity:0.18;margin-bottom:0.3rem;}
+.empty-state .es-title{font-size:0.9rem;font-weight:700;color:var(--text2);}
+.empty-state .es-sub{font-size:0.73rem;color:var(--text3);line-height:1.5;max-width:220px;}
+.empty-state .es-btn{margin-top:0.4rem;padding:0.42rem 1.1rem;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--accent));color:#fff;border:none;font-family:var(--font);font-size:0.73rem;font-weight:700;cursor:pointer;box-shadow:0 2px 12px var(--glow-blue);transition:all 0.15s;}
+.empty-state .es-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+
+/* Toast notifications */
+.toast-container{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:0.5rem;pointer-events:none;}
+.toast{background:rgba(16,20,31,0.95);border:1px solid var(--border2);border-radius:999px;padding:0.55rem 1.2rem;font-size:0.78rem;font-weight:600;color:var(--text);backdrop-filter:blur(16px);box-shadow:0 4px 24px rgba(0,0,0,0.4);display:flex;align-items:center;gap:0.5rem;white-space:nowrap;animation:toastIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
+.toast.toast-out{animation:toastOut 0.25s ease forwards;}
+.toast.success{border-color:rgba(34,197,94,0.4);color:var(--green);}
+.toast.error{border-color:rgba(255,94,108,0.4);color:var(--ct);}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(0.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(8px) scale(0.95);}}
+
 /* ANIMATIONS */
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* Page transition animation */
+@keyframes pageIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.page.active{animation:pageIn 0.28s cubic-bezier(0.22,1,0.36,1) both;}
 
 /* MOBILE */
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
@@ -788,14 +813,14 @@ body.light-mode .sp-bars{border-top-color:rgba(60,80,140,0.1);}
   </div>
   <nav class="sb-nav">
     <div class="ng-label">Overview</div>
-    <button class="nb active" data-p="dashboard" onclick="go('dashboard')"><span class="ni">🏠</span>Dashboard<span class="nc" id="nc-all">0</span></button>
-    <button class="nb" data-p="calendar" onclick="go('calendar')"><span class="ni">📅</span>Calendar</button>
-    <button class="nb" data-p="schedule" onclick="go('schedule')"><span class="ni">🕐</span>Class Schedule</button>
+    <button class="nb active" data-p="dashboard" onclick="go('dashboard')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="7" rx="1.5"/><rect x="11" y="3" width="6" height="4" rx="1.5"/><rect x="11" y="10" width="6" height="7" rx="1.5"/><rect x="3" y="13" width="6" height="4" rx="1.5"/></svg></span>Dashboard<span class="nc" id="nc-all">0</span></button>
+    <button class="nb" data-p="calendar" onclick="go('calendar')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14"/><path d="M7 2v4M13 2v4"/><circle cx="7" cy="12" r="0.8" fill="currentColor"/><circle cx="10" cy="12" r="0.8" fill="currentColor"/><circle cx="13" cy="12" r="0.8" fill="currentColor"/></svg></span>Calendar</button>
+    <button class="nb" data-p="schedule" onclick="go('schedule')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4.5l3 1.8"/></svg></span>Class Schedule</button>
     <div class="ng-label" style="margin-top:0.5rem">Academics</div>
-    <button class="nb" data-p="events" onclick="go('events')"><span class="ni">📋</span>All Events</button>
-    <button class="nb" data-p="courses" onclick="go('courses')"><span class="ni">📘</span>Courses</button>
-    <button class="nb" data-p="teachers" onclick="go('teachers')"><span class="ni">👨‍🏫</span>Teachers</button>
-    <button class="nb" data-p="students" onclick="go('students')"><span class="ni">🎓</span>Students</button>
+    <button class="nb" data-p="events" onclick="go('events')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M7 7h6M7 10.5h6M7 14h4"/></svg></span>All Events</button>
+    <button class="nb" data-p="courses" onclick="go('courses')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a1 1 0 011-1h10a1 1 0 011 1v11a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/><path d="M8 4v12M8 9h7"/></svg></span>Courses</button>
+    <button class="nb" data-p="teachers" onclick="go('teachers')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.31 2.69-5 6-5s6 1.69 6 5"/><path d="M14 4l2 2-2 2"/></svg></span>Teachers</button>
+    <button class="nb" data-p="students" onclick="go('students')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L3 6.5l7 3.5 7-3.5L10 3z"/><path d="M3 6.5v5M7 8.5v4c0 1.38 1.34 2.5 3 2.5s3-1.12 3-2.5v-4"/><path d="M17 6.5v3"/></svg></span>Students</button>
     <div class="ng-label" style="margin-top:0.5rem">Quick Filter</div>
     <button class="nb" data-p="events" data-f="ct" onclick="go('events','ct')"><span class="ndot" style="background:var(--ct)"></span>Class Tests<span class="nc" id="nc-ct">0</span></button>
     <button class="nb" data-p="events" data-f="assignment" onclick="go('events','assignment')"><span class="ndot" style="background:var(--assign)"></span>Assignments<span class="nc" id="nc-as">0</span></button>
@@ -1633,7 +1658,17 @@ function renderTaskList() {
   if(wc) wc.textContent = evs.length + ' task' + (evs.length!==1?'s':'');
 
   if(evs.length===0){
-    el.innerHTML='<div style="font-size:0.78rem;color:var(--text3);padding:1.5rem 0;text-align:center">All caught up! 🎉</div>';
+    el.innerHTML=`<div class="empty-state">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+        <circle cx="36" cy="36" r="30" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4"/>
+        <path d="M24 36h24M36 24v24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="48" cy="24" r="8" fill="var(--green)" opacity="0.15"/>
+        <path d="M45 24l2 2 4-4" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="es-title">All caught up! 🎉</div>
+      <div class="es-sub">No upcoming tasks. Add a new event to get started.</div>
+      <button class="es-btn" onclick="openAddEvent()">＋ Add Event</button>
+    </div>`;
     return;
   }
   el.innerHTML = evs.map(e=>{
@@ -1875,7 +1910,7 @@ function evCard(e, showActs=true) {
 
 function toggleDone(id) {
   const e = DB.events.find(x=>x.id===id);
-  if(e) { e.done=!e.done; persist(); refresh(); }
+  if(e) { e.done=!e.done; persist(); refresh(); showToast(e.done ? '✓ Marked complete' : 'Marked incomplete'); }
 }
 function deleteEvent(id) {
   if(!confirm('Delete this event?')) return;
@@ -2117,6 +2152,20 @@ function selType(t) {
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel-ct','sel-assignment','sel-presentation','sel-class'));
   document.querySelector(`.type-btn[data-t="${t}"]`)?.classList.add('sel-'+t);
 }
+// ── TOAST NOTIFICATIONS ──
+function showToast(msg, type='success', duration=2400) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  t.innerHTML = `<span style="font-size:0.9rem">${icon}</span>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('toast-out');
+    setTimeout(() => t.remove(), 260);
+  }, duration);
+}
+
 function saveEvModal() {
   const title = document.getElementById('ev-title').value.trim();
   const date  = document.getElementById('ev-date').value;
@@ -2126,12 +2175,12 @@ function saveEvModal() {
     teacher:document.getElementById('ev-teacher').value,
     semester:+document.getElementById('ev-semester').value,
     notes:document.getElementById('ev-notes').value.trim(), done:false };
-  if(editEvId) { const i=DB.events.findIndex(x=>x.id===editEvId); DB.events[i]=ev; }
-  else DB.events.push(ev);
+  if(editEvId) { const i=DB.events.findIndex(x=>x.id===editEvId); DB.events[i]=ev; showToast('Event updated'); }
+  else { DB.events.push(ev); showToast('Event added'); }
   persist(); closeEvModal(); refresh();
 }
 function closeEvModal() { document.getElementById('ov-event').classList.remove('open'); }
-function deleteEvModal() { if(!editEvId) return; if(!confirm('Delete this event?')) return; DB.events=DB.events.filter(x=>x.id!==editEvId); persist(); closeEvModal(); refresh(); }
+function deleteEvModal() { if(!editEvId) return; if(!confirm('Delete this event?')) return; DB.events=DB.events.filter(x=>x.id!==editEvId); persist(); closeEvModal(); refresh(); showToast('Event deleted', 'error'); }
 
 // DETAIL VIEW
 let detailId = null;
@@ -2212,11 +2261,11 @@ function saveTeacherModal() {
   if(!name) return alert('Name required.');
   const colors=['#2d7a4f','#7c3d8a','#0a7ab8','#5c4fd6','#4a7c3f','#b8720a','#c0392b','#16a085'];
   const t = {id:editTId||_nextId(),name,dept:document.getElementById('t-dept').value.trim(),email:document.getElementById('t-email').value.trim(),phone:document.getElementById('t-phone').value.trim(),office:document.getElementById('t-office').value.trim(),hours:document.getElementById('t-hours').value.trim(),notes:document.getElementById('t-notes').value.trim(),color:colors[DB.teachers.length%colors.length]};
-  if(editTId){const i=DB.teachers.findIndex(x=>x.id===editTId);DB.teachers[i]=t;}else DB.teachers.push(t);
+  if(editTId){const i=DB.teachers.findIndex(x=>x.id===editTId);DB.teachers[i]=t;showToast('Teacher updated');}else{DB.teachers.push(t);showToast('Teacher added');}
   persist(); closeTeacherModal(); if(curPage==='teachers') renderTeachers();
 }
 function closeTeacherModal() { document.getElementById('ov-teacher').classList.remove('open'); }
-function deleteTeacherModal() { if(!editTId) return; if(!confirm('Delete this teacher?')) return; DB.teachers=DB.teachers.filter(x=>x.id!==editTId); persist(); closeTeacherModal(); if(curPage==='teachers') renderTeachers(); }
+function deleteTeacherModal() { if(!editTId) return; if(!confirm('Delete this teacher?')) return; DB.teachers=DB.teachers.filter(x=>x.id!==editTId); persist(); closeTeacherModal(); if(curPage==='teachers') renderTeachers(); showToast('Teacher removed', 'error'); }
 
 // SETTINGS MODAL
 function openSettings() {
@@ -2643,6 +2692,9 @@ window.addEventListener('load', ()=>{
   });
 });
 </script>
+
+<!-- Toast notifications -->
+<div class="toast-container" id="toast-container"></div>
 
 <!-- Floating Quick-Add Button -->
 <button class="fab" onclick="openAddEvent()" title="Quick add event">＋</button>
