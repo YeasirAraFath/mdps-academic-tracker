@@ -1107,98 +1107,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
     <button class="btn btn-ghost btn-sm" onclick="exportStudentsCSV()">⬇️ Export</button>
   </div>
   <div id="student-list"></div>
-
-  <!-- PHOTO GALLERY SECTION -->
-  <div style="margin-top:2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;box-shadow:var(--sh);">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
-      <div style="display:flex;align-items:center;gap:0.6rem;">
-        <span style="font-size:1.3rem;">📸</span>
-        <div>
-          <div style="font-size:1rem;font-weight:700;color:var(--text)">Group Gallery</div>
-          <div style="font-size:0.68rem;color:var(--text3);margin-top:0.1rem;">Upload and view batch group photos</div>
-        </div>
-      </div>
-      <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.42rem 1rem;border-radius:var(--rsm);background:linear-gradient(135deg,var(--blue),var(--accent));color:#fff;border:none;font-family:var(--font);font-size:0.76rem;font-weight:700;cursor:pointer;box-shadow:0 2px 12px var(--glow-blue);">
-        ＋ Add Photos
-        <input type="file" accept="image/*" multiple style="display:none" onchange="addGalleryPhotos(this)">
-      </label>
-    </div>
-    <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;">
-      <div style="grid-column:1/-1;text-align:center;padding:2rem 1rem;color:var(--text3);font-size:0.8rem;opacity:0.6;" id="gallery-empty">
-        🖼️ No photos yet — upload group photos above
-      </div>
-    </div>
-  </div>
 </div>
-
-<script>
-// ── GALLERY ──
-let galleryPhotos = JSON.parse(localStorage.getItem('mdps-gallery') || '[]');
-
-function addGalleryPhotos(input) {
-  const files = Array.from(input.files);
-  let loaded = 0;
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      galleryPhotos.push({ name: file.name, src: e.target.result, date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) });
-      loaded++;
-      if(loaded === files.length) {
-        localStorage.setItem('mdps-gallery', JSON.stringify(galleryPhotos));
-        renderGallery();
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
-
-function deleteGalleryPhoto(idx) {
-  galleryPhotos.splice(idx, 1);
-  localStorage.setItem('mdps-gallery', JSON.stringify(galleryPhotos));
-  renderGallery();
-}
-
-function renderGallery() {
-  const grid = document.getElementById('gallery-grid');
-  const empty = document.getElementById('gallery-empty');
-  if(!grid) return;
-  if(galleryPhotos.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 1rem;color:var(--text3);font-size:0.8rem;opacity:0.6;" id="gallery-empty">🖼️ No photos yet — upload group photos above</div>';
-    return;
-  }
-  grid.innerHTML = galleryPhotos.map((p,i) => `
-    <div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);aspect-ratio:1;cursor:pointer;" onclick="openLightbox(${i})" title="${p.name}">
-      <img src="${p.src}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">
-      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:0.4rem 0.5rem;">
-        <div style="font-size:0.6rem;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-        <div style="font-size:0.55rem;color:rgba(255,255,255,0.5);">${p.date}</div>
-      </div>
-      <button onclick="event.stopPropagation();deleteGalleryPhoto(${i})" style="position:absolute;top:0.35rem;right:0.35rem;background:rgba(0,0,0,0.55);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.15s;" class="del-btn">✕</button>
-    </div>`).join('');
-  // Show delete button on hover
-  grid.querySelectorAll('[style*="position:relative"]').forEach(card => {
-    const btn = card.querySelector('.del-btn');
-    card.addEventListener('mouseenter', () => { if(btn) btn.style.opacity='1'; });
-    card.addEventListener('mouseleave', () => { if(btn) btn.style.opacity='0'; });
-  });
-}
-
-function openLightbox(idx) {
-  const p = galleryPhotos[idx];
-  const lb = document.createElement('div');
-  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);';
-  lb.innerHTML = `<div style="position:relative;max-width:90vw;max-height:90vh;text-align:center;">
-    <img src="${p.src}" style="max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.8);">
-    <div style="margin-top:0.6rem;font-size:0.78rem;color:rgba(255,255,255,0.7);">${p.name}</div>
-    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:-0.8rem;right:-0.8rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-  </div>`;
-  lb.addEventListener('click', e => { if(e.target === lb) lb.remove(); });
-  document.body.appendChild(lb);
-}
-
-renderGallery();
-</script>
 
 </main>
 </div>
@@ -2547,246 +2456,285 @@ function showViewOnlyNotice(n){const el=document.getElementById('view-only-notic
 function hideViewOnlyNotice(){const el=document.getElementById('view-only-notice');if(el)el.style.display='none';}
 
 // ══ STUDY FILES ══
-const SF_ICONS = {
-  pdf:'📕', ppt:'📊', pptx:'📊', doc:'📝', docx:'📝',
-  xls:'📗', xlsx:'📗', txt:'📄', zip:'🗜️',
-  png:'🖼️', jpg:'🖼️', jpeg:'🖼️', gif:'🖼️'
-};
-const SF_ICON_CLASS = {
-  pdf:'pdf', ppt:'ppt', pptx:'ppt', doc:'doc', docx:'doc',
-  xls:'xls', xlsx:'xls', png:'img', jpg:'img', jpeg:'img', gif:'img'
-};
+// File DATA stored in IndexedDB (no size limit)
+// File METADATA in DB.studyFiles (synced via Drive/Gist for sharing)
+// Files <500KB get base64 embedded in DB so friends can download via shared link
 
-let sfCurrentFolder = null; // null = root
+const SF_ICONS = { pdf:'📕', ppt:'📊', pptx:'📊', doc:'📝', docx:'📝', xls:'📗', xlsx:'📗', txt:'📄', zip:'🗜️', png:'🖼️', jpg:'🖼️', jpeg:'🖼️', gif:'🖼️' };
+const SF_ICON_CLASS = { pdf:'pdf', ppt:'ppt', pptx:'ppt', doc:'doc', docx:'doc', xls:'xls', xlsx:'xls', png:'img', jpg:'img', jpeg:'img', gif:'img' };
 
-function sfNextId() { return Date.now() + Math.floor(Math.random()*1000); }
+let sfCurrentFolder = null;
+let sfIDB = null;
 
-function fmtSize(bytes) {
-  if(!bytes) return '';
-  if(bytes < 1024) return bytes + ' B';
-  if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/1048576).toFixed(1) + ' MB';
+function sfOpenIDB() {
+  return new Promise((resolve, reject) => {
+    if(sfIDB) return resolve(sfIDB);
+    const req = indexedDB.open('mdps-studyfiles', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('files', { keyPath: 'id' });
+    req.onsuccess = e => { sfIDB = e.target.result; resolve(sfIDB); };
+    req.onerror = () => reject(req.error);
+  });
+}
+function sfSaveToIDB(id, data) {
+  return sfOpenIDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put({ id, data });
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+function sfGetFromIDB(id) {
+  return sfOpenIDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction('files', 'readonly');
+    const req = tx.objectStore('files').get(id);
+    req.onsuccess = () => resolve(req.result ? req.result.data : null);
+    req.onerror = () => reject(req.error);
+  }));
+}
+function sfDeleteFromIDB(id) {
+  return sfOpenIDB().then(db => new Promise(resolve => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(id);
+    tx.oncomplete = resolve;
+  }));
 }
 
-// ── Upload individual files ──
+function sfNextId() { return Date.now() + '_' + Math.floor(Math.random()*99999); }
+function fmtSize(b) {
+  if(!b && b!==0) return '';
+  if(b<1024) return b+' B';
+  if(b<1048576) return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
+}
+
+// ── Upload files ──
 function sfAddFiles(input) {
   if(document.body.classList.contains('view-only')) return;
   const files = Array.from(input.files);
   if(!files.length) return;
-  let loaded = 0;
+  if(!DB.studyFiles) DB.studyFiles = [];
+  const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  let saved = 0; const total = files.length;
+  sfShowProgress(0, total, 'Uploading');
   files.forEach(file => {
+    const ext = (file.name.split('.').pop()||'').toLowerCase();
+    const id = sfNextId();
     const reader = new FileReader();
     reader.onload = ev => {
-      const ext = file.name.split('.').pop().toLowerCase();
-      if(!DB.studyFiles) DB.studyFiles = [];
-      DB.studyFiles.push({
-        id: sfNextId(), type: 'file',
-        name: file.name, ext, size: file.size,
-        data: ev.target.result,
-        folder: sfCurrentFolder,
-        date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-      });
-      loaded++;
-      if(loaded === files.length) { persist(); renderSF(); if(typeof showToast==='function') showToast(`${files.length} file${files.length>1?'s':''} uploaded`); }
+      const data = ev.target.result;
+      sfSaveToIDB(id, data).then(() => {
+        DB.studyFiles.push({ id, type:'file', name:file.name, ext, size:file.size, folder:sfCurrentFolder, date, data: file.size<512000 ? data : null });
+        saved++;
+        sfShowProgress(saved, total, 'Uploading');
+        if(saved === total) { persist(); renderSF(); alert('✅ '+total+' file'+(total>1?'s':'')+' uploaded!'); }
+      }).catch(err => alert('Upload failed: '+err.message));
     };
+    reader.onerror = () => alert('Could not read: '+file.name);
     reader.readAsDataURL(file);
   });
   input.value = '';
 }
 
-// ── Upload folder (preserves folder name as a folder entry) ──
+// ── Upload folder ──
 function sfAddFolder(input) {
   if(document.body.classList.contains('view-only')) return;
   const files = Array.from(input.files);
   if(!files.length) return;
   if(!DB.studyFiles) DB.studyFiles = [];
-  // Get top-level folder name from first file's relative path
-  const topFolder = files[0].webkitRelativePath.split('/')[0] || 'Uploaded Folder';
-  // Create folder entry if not exists
-  const existingFolder = DB.studyFiles.find(f => f.type==='folder' && f.name===topFolder && f.folder===sfCurrentFolder);
-  const folderId = existingFolder ? existingFolder.id : sfNextId();
-  if(!existingFolder) {
-    DB.studyFiles.push({ id: folderId, type: 'folder', name: topFolder, folder: sfCurrentFolder, date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) });
-  }
-  let loaded = 0;
+  const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const folderMap = {};
+  // Build unique folder paths sorted so parents come first
+  const folderPaths = new Set();
   files.forEach(file => {
+    const parts = file.webkitRelativePath.split('/');
+    for(let i=1; i<parts.length; i++) folderPaths.add(parts.slice(0,i).join('/'));
+  });
+  Array.from(folderPaths).sort().forEach(path => {
+    const parts = path.split('/');
+    const name = parts[parts.length-1];
+    const parentPath = parts.slice(0,-1).join('/');
+    const parentId = parentPath ? folderMap[parentPath] : sfCurrentFolder;
+    const existing = DB.studyFiles.find(f=>f.type==='folder'&&f.name===name&&f.folder===parentId);
+    const id = existing ? existing.id : sfNextId();
+    if(!existing) DB.studyFiles.push({ id, type:'folder', name, folder:parentId, date });
+    folderMap[path] = id;
+  });
+  const total = files.length; let saved = 0;
+  sfShowProgress(0, total, 'Uploading folder');
+  files.forEach(file => {
+    const parts = file.webkitRelativePath.split('/');
+    const fname = parts[parts.length-1];
+    const folderPath = parts.slice(0,-1).join('/');
+    const parentId = folderPath ? folderMap[folderPath] : sfCurrentFolder;
+    const ext = (fname.split('.').pop()||'').toLowerCase();
+    const id = sfNextId();
     const reader = new FileReader();
     reader.onload = ev => {
-      const ext = file.name.split('.').pop().toLowerCase();
-      // Use filename only (strip folder prefix)
-      const fname = file.webkitRelativePath.split('/').slice(1).join('/') || file.name;
-      DB.studyFiles.push({
-        id: sfNextId(), type: 'file',
-        name: fname, ext, size: file.size,
-        data: ev.target.result,
-        folder: folderId,
-        date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-      });
-      loaded++;
-      if(loaded === files.length) { persist(); renderSF(); if(typeof showToast==='function') showToast(`Folder "${topFolder}" uploaded (${files.length} files)`); }
+      const data = ev.target.result;
+      sfSaveToIDB(id, data).then(() => {
+        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null });
+        saved++;
+        sfShowProgress(saved, total, 'Uploading folder');
+        if(saved === total) { persist(); renderSF(); alert('✅ Folder uploaded: '+total+' file'+(total>1?'s':'')); }
+      }).catch(err => alert('Upload failed: '+err.message));
     };
+    reader.onerror = () => alert('Could not read: '+fname);
     reader.readAsDataURL(file);
   });
   input.value = '';
 }
 
-// ── Create new folder ──
+function sfShowProgress(done, total, label) {
+  const grid = document.getElementById('sf-grid');
+  if(!grid) return;
+  let prog = document.getElementById('sf-upload-progress');
+  if(!prog) {
+    prog = document.createElement('div');
+    prog.id = 'sf-upload-progress';
+    prog.style.cssText = 'grid-column:1/-1;padding:1.2rem;text-align:center;font-size:0.82rem;color:var(--text2);';
+    grid.prepend(prog);
+  }
+  prog.textContent = label+': '+done+' / '+total+'…';
+}
+
+// ── New folder ──
 function sfNewFolder() {
   if(document.body.classList.contains('view-only')) return;
   const name = prompt('Folder name:');
-  if(!name || !name.trim()) return;
+  if(!name||!name.trim()) return;
   if(!DB.studyFiles) DB.studyFiles = [];
-  DB.studyFiles.push({ id: sfNextId(), type:'folder', name:name.trim(), folder:sfCurrentFolder, date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) });
-  persist(); renderSF(); if(typeof showToast==='function') showToast(`Folder "${name.trim()}" created`);
+  const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  DB.studyFiles.push({ id:sfNextId(), type:'folder', name:name.trim(), folder:sfCurrentFolder, date });
+  persist(); renderSF(); alert('✅ Folder "'+name.trim()+'" created');
 }
 
-// ── Delete file or folder (and all contents) ──
+// ── Delete ──
 function sfDelete(id) {
   if(document.body.classList.contains('view-only')) return;
   const item = (DB.studyFiles||[]).find(f=>f.id===id);
   if(!item) return;
-  const isFolder = item.type==='folder';
-  if(!confirm(`Delete "${item.name}"${isFolder?' and all its contents?':'?'}`)) return;
+  if(!confirm('Delete "'+item.name+'"'+(item.type==='folder'?' and all its contents?':'?'))) return;
   function collectIds(fid) {
-    const ids = [fid];
-    (DB.studyFiles||[]).filter(f=>f.folder===fid).forEach(f=>{ ids.push(...collectIds(f.id)); });
+    const ids=[fid];
+    (DB.studyFiles||[]).filter(f=>f.folder===fid).forEach(f=>ids.push(...collectIds(f.id)));
     return ids;
   }
-  const toDelete = isFolder ? collectIds(id) : [id];
+  const toDelete = item.type==='folder' ? collectIds(id) : [id];
+  toDelete.forEach(tid => sfDeleteFromIDB(tid).catch(()=>{}));
   DB.studyFiles = (DB.studyFiles||[]).filter(f=>!toDelete.includes(f.id));
-  persist(); renderSF(); if(typeof showToast==='function') showToast('Deleted', 'error');
+  persist(); renderSF();
 }
 
-// ── Download file ──
+// ── Download ──
 function sfDownload(id) {
-  const f = (DB.studyFiles||[]).find(x=>x.id===id);
-  if(!f || f.type==='folder') return;
-  const a = document.createElement('a');
-  a.href = f.data; a.download = f.name.split('/').pop(); a.click();
+  const meta = (DB.studyFiles||[]).find(x=>x.id===id);
+  if(!meta||meta.type==='folder') return;
+  sfGetFromIDB(id).then(data => {
+    const src = data || meta.data;
+    if(!src) { alert('File not available.\n\nThis file is larger than 500KB and was not embedded in the shared link. The owner needs to re-upload it to make it downloadable for friends.'); return; }
+    const a = document.createElement('a');
+    a.href = src; a.download = (meta.name||'file').split('/').pop();
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
 }
 
-// ── Open folder ──
-function sfOpenFolder(id) {
-  sfCurrentFolder = id;
-  renderSF();
-}
+function sfOpenFolder(id) { sfCurrentFolder = id; renderSF(); }
+function sfGoTo(id) { sfCurrentFolder = id; renderSF(); }
 
-// ── Navigate breadcrumb ──
-function sfGoTo(id) {
-  sfCurrentFolder = id;
-  renderSF();
-}
-
-// ── Build breadcrumb path ──
 function sfBreadcrumb() {
-  const path = [];
-  let cur = sfCurrentFolder;
-  while(cur !== null) {
-    const f = (DB.studyFiles||[]).find(x=>x.id===cur);
+  const path=[];
+  let cur=sfCurrentFolder;
+  while(cur!==null && cur!==undefined) {
+    const f=(DB.studyFiles||[]).find(x=>x.id===cur);
     if(!f) break;
-    path.unshift({ id: f.id, name: f.name });
-    cur = f.folder;
+    path.unshift({id:f.id,name:f.name});
+    cur=f.folder;
   }
-  path.unshift({ id: null, name: 'All Files' });
+  path.unshift({id:null,name:'All Files'});
   return path;
 }
 
-// ── Render ──
 function renderSF() {
-  const grid = document.getElementById('sf-grid');
-  const statsEl = document.getElementById('sf-stats');
-  const bcEl = document.getElementById('sf-breadcrumb');
-  const banner = document.getElementById('sf-viewonly-banner');
-  const ownerActions = document.getElementById('sf-owner-actions');
-  const q = (document.getElementById('sf-search')?.value||'').toLowerCase().trim();
+  const grid=document.getElementById('sf-grid');
+  const statsEl=document.getElementById('sf-stats');
+  const bcEl=document.getElementById('sf-breadcrumb');
+  const banner=document.getElementById('sf-viewonly-banner');
+  const ownerActions=document.getElementById('sf-owner-actions');
   if(!grid) return;
-
-  const isViewOnly = document.body.classList.contains('view-only');
-  if(banner) banner.style.display = isViewOnly ? 'flex' : 'none';
-  if(ownerActions) ownerActions.style.display = isViewOnly ? 'none' : 'flex';
-
-  const allFiles = DB.studyFiles || [];
+  const q=(document.getElementById('sf-search')?.value||'').toLowerCase().trim();
+  const isVO=document.body.classList.contains('view-only');
+  if(banner) banner.style.display=isVO?'flex':'none';
+  if(ownerActions) ownerActions.style.display=isVO?'none':'flex';
+  const all=DB.studyFiles||[];
 
   // Stats
   if(statsEl) {
-    const totalFiles = allFiles.filter(f=>f.type==='file').length;
-    const totalFolders = allFiles.filter(f=>f.type==='folder').length;
-    const totalSize = allFiles.filter(f=>f.type==='file').reduce((a,f)=>a+(f.size||0),0);
-    statsEl.innerHTML = [
-      `<div class="sf-stat"><span>📄</span><strong>${totalFiles}</strong> files</div>`,
-      `<div class="sf-stat"><span>📁</span><strong>${totalFolders}</strong> folders</div>`,
-      `<div class="sf-stat"><span>💾</span><strong>${fmtSize(totalSize)||'0 B'}</strong> total</div>`,
-    ].join('');
+    const nF=all.filter(f=>f.type==='file').length;
+    const nD=all.filter(f=>f.type==='folder').length;
+    const sz=all.filter(f=>f.type==='file').reduce((a,f)=>a+(f.size||0),0);
+    statsEl.innerHTML=`<div class="sf-stat">📄 <strong>${nF}</strong> files</div><div class="sf-stat">📁 <strong>${nD}</strong> folders</div><div class="sf-stat">💾 <strong>${fmtSize(sz)||'0 B'}</strong></div>`;
   }
 
   // Breadcrumb
   if(bcEl) {
-    const path = sfBreadcrumb();
-    bcEl.innerHTML = path.map((p,i) => {
-      const isLast = i === path.length-1;
-      return `${i>0?'<span class="sf-bc-sep">›</span>':''}
-        <span class="sf-bc-item${isLast?' active':''}" onclick="sfGoTo(${JSON.stringify(p.id)})">${p.name}</span>`;
+    const path=sfBreadcrumb();
+    bcEl.innerHTML=path.map((p,i)=>{
+      const last=i===path.length-1;
+      return (i>0?'<span class="sf-bc-sep"> › </span>':'')+'<span class="sf-bc-item'+(last?' active':'')+'" onclick="sfGoTo('+JSON.stringify(p.id)+')" style="cursor:'+(last?'default':'pointer')+'">'+p.name+'</span>';
     }).join('');
   }
 
-  // Get items to display
-  let items;
-  if(q) {
-    // Search all files recursively
-    items = allFiles.filter(f => f.name.toLowerCase().includes(q));
-  } else {
-    // Show current folder contents
-    items = allFiles.filter(f => f.folder === sfCurrentFolder);
-  }
-
-  // Sort: folders first, then files alphabetically
-  items.sort((a,b) => {
-    if(a.type==='folder' && b.type!=='folder') return -1;
-    if(a.type!=='folder' && b.type==='folder') return 1;
+  // Items
+  let items=q ? all.filter(f=>f.name.toLowerCase().includes(q)) : all.filter(f=>f.folder===sfCurrentFolder);
+  items.sort((a,b)=>{
+    if(a.type==='folder'&&b.type!=='folder') return -1;
+    if(a.type!=='folder'&&b.type==='folder') return 1;
     return a.name.localeCompare(b.name);
   });
 
-  if(items.length === 0) {
-    const msg = q ? `No files matching "${q}"` : (sfCurrentFolder ? 'This folder is empty' : 'No study files yet');
-    const hint = (!q && !sfCurrentFolder && !isViewOnly) ? 'Upload files or create a folder to get started.' : '';
-    grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:0.8rem;text-align:center;">
-      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="opacity:0.15"><rect x="8" y="16" width="48" height="38" rx="4" stroke="currentColor" stroke-width="2"/><path d="M8 24h48" stroke="currentColor" stroke-width="2"/><path d="M8 16l8-8h12l6 8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M28 36h8M32 32v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <div style="font-size:0.9rem;font-weight:700;color:var(--text2)">${msg}</div>
-      ${hint ? `<div style="font-size:0.75rem;color:var(--text3)">${hint}</div>` : ''}
-      ${(!q && !sfCurrentFolder && !isViewOnly) ? `<button class="btn btn-primary btn-sm" onclick="document.getElementById('sf-file-input').click()" style="margin-top:0.4rem">＋ Upload Files</button>` : ''}
+  if(items.length===0) {
+    const msg=q?`No files matching "${q}"`:(sfCurrentFolder?'This folder is empty':'No study files yet');
+    grid.innerHTML=`<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:3rem 1rem;gap:0.9rem;text-align:center;">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="opacity:0.15"><rect x="8" y="16" width="48" height="38" rx="4" stroke="currentColor" stroke-width="2.5"/><path d="M8 24h48" stroke="currentColor" stroke-width="2.5"/><path d="M8 16l8-8h14l6 8" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M28 36h8M32 32v8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <div style="font-size:0.92rem;font-weight:700;color:var(--text2)">${msg}</div>
+      ${(!q&&!isVO)?`<div style="font-size:0.75rem;color:var(--text3)">Upload files or create a folder to get started</div>
+        <div style="display:flex;gap:0.6rem;margin-top:0.4rem;flex-wrap:wrap;justify-content:center;">
+          <label class="btn btn-primary btn-sm" style="cursor:pointer">＋ Upload Files<input type="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.txt,.zip,.png,.jpg,.jpeg" multiple style="display:none" onchange="sfAddFiles(this)"></label>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer">📁 Upload Folder<input type="file" webkitdirectory mozdirectory multiple style="display:none" onchange="sfAddFolder(this)"></label>
+        </div>`:''
+      }
     </div>`;
     return;
   }
 
-  grid.innerHTML = items.map(item => {
-    if(item.type === 'folder') {
-      const childCount = allFiles.filter(f=>f.folder===item.id).length;
-      return `<div class="sf-card sf-folder" onclick="sfOpenFolder(${item.id})">
+  grid.innerHTML=items.map(item=>{
+    if(item.type==='folder') {
+      const cnt=all.filter(f=>f.folder===item.id).length;
+      return `<div class="sf-card sf-folder" onclick="sfOpenFolder('${item.id}')">
         <div class="sf-icon folder">📁</div>
         <div class="sf-name">${item.name}</div>
-        <div class="sf-meta">${childCount} item${childCount!==1?'s':''} · ${item.date}</div>
-        ${!isViewOnly ? `<div class="sf-actions" onclick="event.stopPropagation()">
-          <button class="sf-btn del" onclick="sfDelete(${item.id})">🗑 Delete</button>
-        </div>` : ''}
-      </div>`;
-    } else {
-      const ext = (item.ext||'').toLowerCase();
-      const iconClass = SF_ICON_CLASS[ext] || 'other';
-      const icon = SF_ICONS[ext] || '📄';
-      const displayName = item.name.split('/').pop();
-      return `<div class="sf-card" onclick="sfDownload(${item.id})" title="Click to download">
-        <div class="sf-icon ${iconClass}">${icon}</div>
-        <div class="sf-name">${displayName}</div>
-        <div class="sf-meta">${ext.toUpperCase()} · ${fmtSize(item.size)} · ${item.date}</div>
-        <div class="sf-actions" onclick="event.stopPropagation()">
-          <button class="sf-btn" onclick="sfDownload(${item.id})">⬇ Download</button>
-          ${!isViewOnly ? `<button class="sf-btn del" onclick="sfDelete(${item.id})">🗑</button>` : ''}
-        </div>
+        <div class="sf-meta">${cnt} item${cnt!==1?'s':''} · ${item.date||''}</div>
+        ${!isVO?`<div class="sf-actions" onclick="event.stopPropagation()"><button class="sf-btn del" onclick="sfDelete('${item.id}')">🗑 Delete</button></div>`:''}
       </div>`;
     }
+    const ext=(item.ext||'').toLowerCase();
+    const ic=SF_ICON_CLASS[ext]||'other';
+    const icon=SF_ICONS[ext]||'📄';
+    const dispName=(item.name||'').split('/').pop();
+    const canDl=!isVO||item.data;
+    return `<div class="sf-card" title="${dispName}">
+      <div class="sf-icon ${ic}">${icon}</div>
+      <div class="sf-name">${dispName}</div>
+      <div class="sf-meta">${ext?ext.toUpperCase()+' · ':''}${fmtSize(item.size)}${item.date?' · '+item.date:''}</div>
+      <div class="sf-actions">
+        ${canDl?`<button class="sf-btn" onclick="sfDownload('${item.id}')">⬇ Download</button>`:`<span style="font-size:0.62rem;color:var(--text3)">Too large to share</span>`}
+        ${!isVO?`<button class="sf-btn del" onclick="sfDelete('${item.id}')">🗑</button>`:''}
+      </div>
+    </div>`;
   }).join('');
 }
 
+// INIT
 // INIT
 
 // ── PDF EXPORT ──
