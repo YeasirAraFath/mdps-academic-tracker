@@ -1389,18 +1389,11 @@ async function afterSignIn() {
   try {
     setDriveStatus('🔄 Connecting...');
     // Get user info
-    let uInfo = {};
-    try {
-      const tok = gapi.client.getToken();
-      if (tok && tok.access_token) {
-        const uResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: 'Bearer ' + tok.access_token }
-        });
-        if (uResp.ok) uInfo = await uResp.json();
-        else uInfo = { name: 'My Account', email: '' };
-      } else { uInfo = { name: 'My Account', email: '' }; }
-    } catch(ue) { uInfo = { name: 'My Account', email: '' }; }
-    gDriveUser = uInfo;
+    // Use stored settings name, or a default
+    gDriveUser = {
+      name: DB.settings.name || 'Yeasir',
+      email: ''
+    };
     // Find or create the data file
     gDriveFileId = await findOrCreateFile();
     // Load data from Drive (Drive is authoritative)
