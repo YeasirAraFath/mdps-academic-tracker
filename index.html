@@ -22,9 +22,41 @@
   --r:14px; --rsm:9px; --font:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
   --sb-w:248px; --header-h:68px;
 }
+/* LIGHT MODE OVERRIDES */
+body.light-mode {
+  --bg:#f0f4ff; --bg2:#e5eaf7; --card:#ffffff; --card2:#f5f7ff;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.16);
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+  --ct:#e03b4a; --assign:#d97706; --present:#5b50e0; --class:#0d9068;
+  --accent:#4f6ef7; --accent2:#7b8fff;
+  --blue:#3b6ff5; --blue2:#6084f7;
+  --green:#16a34a; --green2:#22c55e;
+  --glow:rgba(79,110,247,0.2); --glow-blue:rgba(59,111,245,0.2);
+  --sh:0 1px 4px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.05);
+  --sh2:0 4px 20px rgba(0,0,0,0.12),0 8px 40px rgba(0,0,0,0.07);
+}
+body.light-mode::before{background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(79,110,247,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(13,144,104,0.05) 0%,transparent 50%);}
+body.light-mode::after{background-image:radial-gradient(rgba(79,110,247,0.04) 1px,transparent 1px);background-size:32px 32px;}
+body.light-mode .sidebar{background:rgba(248,250,255,0.97)!important;border-right:1px solid rgba(0,0,0,0.08)!important;}
+body.light-mode .nb:hover{background:rgba(59,111,245,0.07)!important;}
+body.light-mode .nb.active{background:linear-gradient(135deg,rgba(59,111,245,0.14),rgba(59,111,245,0.06))!important;color:var(--blue)!important;border-color:rgba(59,111,245,0.2)!important;}
+body.light-mode .profile-pill{background:linear-gradient(135deg,rgba(59,111,245,0.08),rgba(91,80,224,0.04))!important;border-color:rgba(59,111,245,0.15)!important;}
+body.light-mode .overlay{background:rgba(0,0,0,0.35)!important;}
+body.light-mode .modal{background:#fff!important;border-color:rgba(0,0,0,0.1)!important;}
+body.light-mode .finput{background:#f8faff!important;border-color:rgba(0,0,0,0.12)!important;color:var(--text)!important;}
+body.light-mode .finput:focus{border-color:var(--blue)!important;}
+body.light-mode .term-card{background:#fff!important;}
+body.light-mode .kpi-card{background:#fff!important;}
+body.light-mode .ecard{background:#fff!important;}
+body.light-mode .course-card{background:#fff!important;}
+body.light-mode .teacher-card{background:#fff!important;}
+body.light-mode .scard{background:#fff!important;}
+body.light-mode .topbar-l h2{color:#0f172a;}
+body.light-mode .ng-label{color:#94a3b8!important;}
+
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{font-size:17px;scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background 0.3s,color 0.3s;}
 body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(79,124,255,0.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(34,211,153,0.07) 0%,transparent 50%),radial-gradient(ellipse 50% 60% at 60% 30%,rgba(129,140,248,0.06) 0%,transparent 50%);pointer-events:none;z-index:0;}
 .app{position:relative;z-index:1;}
@@ -516,7 +548,10 @@ select.finput{cursor:pointer;}
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
       👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
     </div>
-    <button class="set-btn" onclick="openSettings()">⚙️ &nbsp;Settings & Profile</button>
+    <div style="display:flex;gap:0.4rem;">
+      <button class="set-btn" onclick="openSettings()" style="flex:1">⚙️ &nbsp;Settings</button>
+      <button class="set-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode" style="flex-shrink:0;width:38px;justify-content:center;font-size:1rem;">🌙</button>
+    </div>
   </div>
 </aside>
 
@@ -1635,18 +1670,34 @@ function setOwnerMode(v) {
   document.body.classList.toggle('owner-mode',v);
 }
 
+// ── THEME ──
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('mdps-theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-toggle-btn').textContent = isLight ? '☀️' : '🌙';
+}
+function applyTheme() {
+  const t = localStorage.getItem('mdps-theme');
+  if(t === 'light') {
+    document.body.classList.add('light-mode');
+    const btn = document.getElementById('theme-toggle-btn');
+    if(btn) btn.textContent = '☀️';
+  }
+}
+
 // ── GOOGLE DRIVE ──
 let BAKED_PUBLIC_FILE_ID = '';
 const CLIENT_ID='486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
 const API_KEY='';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 let gapiInited=false, gisInited=false, tokenClient=null;
+const DRIVE_TOKEN_KEY = 'mdps-drive-token';
 
 function handleDriveClick() {
   if(!gDriveUser) {
     if(!gapiInited || !gisInited) {
       setDriveStatus('⏳ Loading...');
-      initGapi();
+      initGapi(false);
     } else {
       tokenClient?.requestAccessToken({prompt:''});
     }
@@ -1655,7 +1706,7 @@ function handleDriveClick() {
   }
 }
 
-function initGapi() {
+function initGapi(silent=false) {
   const s=document.createElement('script');
   s.src='https://apis.google.com/js/api.js';
   s.onload=()=>{
@@ -1665,24 +1716,58 @@ function initGapi() {
         discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
       });
       gapiInited=true;
-      const gs=document.createElement('script');
-      gs.src='https://accounts.google.com/gsi/client';
-      gs.onload=()=>{
-        tokenClient=google.accounts.oauth2.initTokenClient({
-          client_id:CLIENT_ID,
-          scope:SCOPES,
-          callback:(r)=>{ if(r.error){setDriveStatus('❌ Auth failed');return;} onDriveSignIn(); }
-        });
-        gisInited=true;
-        setDriveStatus('');
-        // Auto-trigger sign in after load
-        tokenClient.requestAccessToken({prompt:''});
-      };
-      document.head.appendChild(gs);
+      // Try restoring saved token first
+      const saved = localStorage.getItem(DRIVE_TOKEN_KEY);
+      if(saved) {
+        try {
+          const tok = JSON.parse(saved);
+          // Check it hasn't expired (tokens last 1 hour)
+          if(tok.expires_at && Date.now() < tok.expires_at) {
+            gapi.client.setToken(tok);
+            gDriveUser=true;
+            setOwnerMode(true);
+            setDriveStatus('🔄 Syncing...');
+            await loadFromDrive();
+            setDriveStatus('✅ Connected');
+            updateSb();
+            // Still load GIS in background for future refresh
+            loadGIS(true);
+            return;
+          }
+        } catch(e) { localStorage.removeItem(DRIVE_TOKEN_KEY); }
+      }
+      loadGIS(silent);
     });
   };
   s.onerror=()=>setDriveStatus('❌ Load failed');
   document.head.appendChild(s);
+}
+
+function loadGIS(silent=false) {
+  const gs=document.createElement('script');
+  gs.src='https://accounts.google.com/gsi/client';
+  gs.onload=()=>{
+    tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,
+      scope:SCOPES,
+      callback:(r)=>{
+        if(r.error){ setDriveStatus(''); return; }
+        // Save token with expiry
+        const tok = gapi.client.getToken();
+        if(tok) {
+          tok.expires_at = Date.now() + (3500 * 1000); // ~58 min
+          localStorage.setItem(DRIVE_TOKEN_KEY, JSON.stringify(tok));
+        }
+        onDriveSignIn();
+      }
+    });
+    gisInited=true;
+    if(!silent) {
+      setDriveStatus('');
+      tokenClient.requestAccessToken({prompt:''});
+    }
+  };
+  document.head.appendChild(gs);
 }
 
 async function onDriveSignIn() {
@@ -1696,6 +1781,7 @@ function signOutDrive() {
   const tok=gapi?.client?.getToken();
   if(tok) google.accounts.oauth2.revoke(tok.access_token,()=>{});
   gapi?.client?.setToken('');
+  localStorage.removeItem(DRIVE_TOKEN_KEY);
   gDriveUser=null;setOwnerMode(false);
   setDriveStatus('');
   document.getElementById('gdrive-label').textContent='Connect Google Drive';
@@ -1775,12 +1861,22 @@ function hideViewOnlyNotice(){const el=document.getElementById('view-only-notice
 
 // INIT
 window.addEventListener('load', ()=>{
+  applyTheme();
   updateSb();
   renderDash();
   // Check for public view
   const isView = new URLSearchParams(location.search).get('view');
-  if(isView) tryLoadPublicData();
-  else setOwnerMode(true);
+  if(isView) {
+    tryLoadPublicData();
+  } else {
+    setOwnerMode(true);
+    // Auto-reconnect Drive if we have a saved token
+    const saved = localStorage.getItem(DRIVE_TOKEN_KEY);
+    if(saved) {
+      setDriveStatus('🔄 Reconnecting...');
+      initGapi(true);
+    }
+  }
   // Close overlays on bg click
   document.querySelectorAll('.overlay').forEach(o=>{
     o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
