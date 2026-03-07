@@ -1965,8 +1965,9 @@ async function loadFromDrive() {
   } catch(e){ console.warn('Drive load err',e); }
 }
 
-// ── PUBLIC SHARING via jsonblob.com ──
-// Free JSON storage: no CORS, no auth to read, simple PUT/GET REST API.
+// ── PUBLIC SHARING via GitHub Gist ──
+// Public gists are readable with no auth and full CORS support.
+// Owner creates/updates a gist; friends read the raw URL directly.
 
 async function publishPublicSnapshot() {
   if(!gDriveUser) return;
@@ -1980,37 +1981,53 @@ async function publishPublicSnapshot() {
       _v: Date.now()
     };
 
-    let blobId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+    let gistId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+    // GitHub PAT (read:gist + gist scope) — embedded for owner writes
+    // Friends only need the raw URL which requires no auth
+    const PAT = localStorage.getItem('mdps-gh-pat') || '';
+    if(!PAT) {
+      // Prompt owner for PAT on first use
+      const entered = prompt(
+        'First-time setup: Enter a GitHub Personal Access Token with "gist" scope.\n' +
+        'Get one at: https://github.com/settings/tokens/new?scopes=gist\n\n' +
+        'This is stored only in your browser, never shared.'
+      );
+      if(!entered) { setDriveStatus('\u26a0\ufe0f Cancelled — PAT needed'); return; }
+      localStorage.setItem('mdps-gh-pat', entered.trim());
+    }
+    const token = localStorage.getItem('mdps-gh-pat');
 
-    if(!blobId) {
-      // Create new blob
-      const cr = await fetch('https://jsonblob.com/api/jsonBlob', {
+    const payload = {
+      description: 'MDPS Academic Tracker — public data',
+      public: true,
+      files: { 'mdps-tracker-data.json': { content: JSON.stringify(pubData) } }
+    };
+
+    if(!gistId) {
+      const cr = await fetch('https://api.github.com/gists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(pubData)
+        headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-      if(!cr.ok) throw new Error('Create failed: ' + cr.status);
-      const loc = cr.headers.get('Location') || '';
-      blobId = loc.split('/').pop();
-      if(!blobId) { const j = await cr.json(); blobId = j.id || ''; }
-      if(!blobId) throw new Error('No blob ID returned from jsonblob');
-      DB.settings.publicFileId = blobId;
-      BAKED_PUBLIC_FILE_ID = blobId;
-      localStorage.setItem('mdps-public-file-id', blobId);
-      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + blobId);
+      if(!cr.ok) { const e = await cr.json(); throw new Error('Create failed: ' + (e.message||cr.status)); }
+      const crJson = await cr.json();
+      gistId = crJson.id;
+      DB.settings.publicFileId = gistId;
+      BAKED_PUBLIC_FILE_ID = gistId;
+      localStorage.setItem('mdps-public-file-id', gistId);
+      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + gistId);
       persist();
     } else {
-      // Update existing blob
-      const upd = await fetch('https://jsonblob.com/api/jsonBlob/' + blobId, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(pubData)
+      const upd = await fetch('https://api.github.com/gists/' + gistId, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-      if(!upd.ok) throw new Error('Update failed: ' + upd.status);
-      BAKED_PUBLIC_FILE_ID = blobId;
+      if(!upd.ok) { const e = await upd.json(); throw new Error('Update failed: ' + (e.message||upd.status)); }
+      BAKED_PUBLIC_FILE_ID = gistId;
     }
     setDriveStatus('\u2705 Synced \u00b7 ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + blobId);
+    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + gistId);
   } catch(e) {
     console.warn('Publish failed:', e);
     setDriveStatus('\u26a0\ufe0f Sync failed: ' + e.message);
@@ -2040,13 +2057,13 @@ function showLastUpdated(iso) {
 }
 
 async function tryLoadPublicData() {
-  const pubFileId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
-  if(!pubFileId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
+  const gistId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if(!gistId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
   try {
     setDriveStatus('\ud83d\udd04 Loading...');
-    // jsonblob.com: direct GET, no CORS, always returns JSON
-    const r = await fetch('https://jsonblob.com/api/jsonBlob/' + pubFileId, {
-      headers: { 'Accept': 'application/json' },
+    // GitHub Gist raw URLs have CORS headers — no proxy needed
+    const cb = Date.now();
+    const r = await fetch('https://gist.githubusercontent.com/raw/' + gistId + '/mdps-tracker-data.json?t=' + cb, {
       cache: 'no-store'
     });
     if(!r.ok) throw new Error('Fetch failed: ' + r.status);
@@ -2056,7 +2073,7 @@ async function tryLoadPublicData() {
       events: pubData.events,
       teachers: pubData.teachers || DB.teachers,
       courseNotes: pubData.courseNotes || DB.courseNotes,
-      settings: { ...DB.settings, ...pubData.settings, publicFileId: pubFileId }
+      settings: { ...DB.settings, ...pubData.settings, publicFileId: gistId }
     };
     setOwnerMode(false);
     showViewOnlyNotice(DB.settings.name);
