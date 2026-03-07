@@ -614,6 +614,29 @@ select.finput{cursor:pointer;}
   .sidebar.open{transform:translateX(0);}
   .main{max-width:100vw;}
 }
+
+/* ── FLOATING ACTION BUTTON ── */
+.fab{position:fixed;bottom:2rem;right:2rem;z-index:200;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--blue));border:none;color:#fff;font-size:1.6rem;cursor:pointer;box-shadow:0 4px 20px rgba(99,102,241,0.5);transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.fab:hover{transform:scale(1.1) translateY(-2px);box-shadow:0 8px 28px rgba(99,102,241,0.65);}
+.fab:active{transform:scale(0.96);}
+body.view-only .fab{display:none!important;}
+
+/* ── COURSE FILTER PILLS ── */
+.wn-course-filter{display:flex;gap:0.4rem;flex-wrap:wrap;margin:0.5rem 0 0.25rem;}
+.cf-pill{padding:0.2rem 0.65rem;border-radius:99px;font-size:0.68rem;font-weight:600;border:1px solid var(--border2);color:var(--text2);background:var(--bg2);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.cf-pill:hover{border-color:var(--accent);color:var(--accent);}
+.cf-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ── URGENCY GLOW ON ECARDS ── */
+.ecard.urgent{border-color:rgba(255,94,108,0.4)!important;box-shadow:0 0 0 1px rgba(255,94,108,0.2),var(--sh)!important;}
+.ecard.soon{border-color:rgba(245,166,35,0.35)!important;box-shadow:0 0 0 1px rgba(245,166,35,0.18),var(--sh)!important;}
+body.light-mode .ecard.urgent{border-color:rgba(214,54,70,0.4)!important;box-shadow:0 2px 12px rgba(214,54,70,0.1)!important;}
+body.light-mode .ecard.soon{border-color:rgba(196,122,0,0.4)!important;box-shadow:0 2px 12px rgba(196,122,0,0.08)!important;}
+
+/* ── PDF EXPORT BUTTON ── */
+.export-pdf-btn{display:flex;align-items:center;gap:0.4rem;padding:0.35rem 0.85rem;border-radius:var(--rsm);background:var(--bg2);border:1px solid var(--border2);color:var(--text2);font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.export-pdf-btn:hover{background:rgba(99,102,241,0.12);border-color:var(--accent);color:var(--accent);}
+body.view-only .export-pdf-btn{display:none!important;}
 </style>
 </head>
 <body>
@@ -698,6 +721,7 @@ select.finput{cursor:pointer;}
       </div>
     </div>
     <div class="topbar-r">
+      <button class="export-pdf-btn" onclick="exportToPDF()" title="Export schedule to PDF">📄 Export PDF</button>
       <button class="btn btn-ghost btn-sm" onclick="openTeacherAdd()">+ Teacher</button>
       <button class="btn btn-primary btn-sm" onclick="openAddEvent()">+ Add Event</button>
     </div>
@@ -734,6 +758,7 @@ select.finput{cursor:pointer;}
         <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="go('events')">View all →</button>
       </div>
       <div id="dash-countdown"></div>
+      <div class="wn-course-filter" id="wn-course-filter"></div>
       <div class="task-list" id="dash-tasklist" style="margin-top:0.5rem"></div>
     </div>
 
@@ -1277,10 +1302,30 @@ function renderCountdown() {
   }).join('')}</div>`;
 }
 
+let wnCourseFilter = '';
+function setWNCourseFilter(course, el) {
+  wnCourseFilter = wnCourseFilter === course ? '' : course;
+  document.querySelectorAll('.cf-pill').forEach(p => p.classList.remove('active'));
+  if(wnCourseFilter) el.classList.add('active');
+  renderTaskList();
+}
+function renderCourseFilterPills(evs) {
+  const filterEl = document.getElementById('wn-course-filter');
+  if(!filterEl) return;
+  const courses = [...new Set(evs.map(e=>e.course).filter(Boolean))];
+  if(courses.length <= 1) { filterEl.innerHTML = ''; return; }
+  filterEl.innerHTML = courses.map(c => {
+    const short = c.split(' ').slice(0,3).join(' ');
+    const active = wnCourseFilter === c ? ' active' : '';
+    return `<button class="cf-pill${active}" onclick="setWNCourseFilter('${c.replace(/'/g,"\\'")}',this)">${short}</button>`;
+  }).join('');
+}
 function renderTaskList() {
   const el = document.getElementById('dash-tasklist');
   if(!el) return;
   let evs = DB.events.filter(e=>!e.done && dl(e.date)>=0).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  renderCourseFilterPills(evs);
+  if(wnCourseFilter) evs = evs.filter(e=>e.course===wnCourseFilter);
   if(upcomingMode==='upcoming') evs = evs.slice(0,5);
   document.getElementById('week-c').textContent = evs.length + ' event' + (evs.length!==1?'s':'');
 
@@ -1390,7 +1435,8 @@ function updateNavCounts() {
 function evCard(e, showActs=true) {
   const d = dl(e.date);
   const teacher = DB.teachers.find(t=>t.name===e.teacher);
-  return `<div class="ecard${e.done?' done':''}" onclick="openDetail(${e.id})">
+  const urgCls = !e.done && d<=2 ? ' urgent' : !e.done && d<=7 ? ' soon' : '';
+  return `<div class="ecard${e.done?' done':''}${urgCls}" onclick="openDetail(${e.id})">
     <div class="estripe" style="background:${TC[e.type]}"></div>
     <div class="ebody">
       <div class="etop">
@@ -2106,6 +2152,46 @@ function showViewOnlyNotice(n){const el=document.getElementById('view-only-notic
 function hideViewOnlyNotice(){const el=document.getElementById('view-only-notice');if(el)el.style.display='none';}
 
 // INIT
+
+// ── PDF EXPORT ──
+function exportToPDF() {
+  const evs = DB.events.filter(e=>!e.done && dl(e.date)>=0).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const typeLabel = {assignment:'Assignment',ct:'Class Test',presentation:'Presentation',class:'Class'};
+  const typeColor = {assignment:'#f5a623',ct:'#ff5e6c',presentation:'#818cf8',class:'#34d399'};
+  const rows = evs.map(e => `
+    <tr>
+      <td>${e.title}</td>
+      <td><span style="background:${typeColor[e.type]||'#888'};color:#fff;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${typeLabel[e.type]||e.type}</span></td>
+      <td>${e.course}</td>
+      <td>${fmtD(e.date)}</td>
+      <td style="color:${dl(e.date)<=2?'#e53e3e':dl(e.date)<=7?'#d69e2e':'#276749'};font-weight:700">${cdT(dl(e.date))}</td>
+    </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>MDPS Academic Schedule — ${DB.settings.name}</title>
+  <style>
+    body{font-family:'Segoe UI',sans-serif;padding:32px;color:#0d1526;max-width:900px;margin:0 auto;}
+    h1{font-size:22px;font-weight:700;margin:0 0 4px;}
+    p{font-size:13px;color:#666;margin:0 0 24px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{background:#0d1526;color:#fff;padding:10px 12px;text-align:left;font-weight:600;}
+    td{padding:9px 12px;border-bottom:1px solid #e2e8f0;}
+    tr:nth-child(even) td{background:#f8faff;}
+    .footer{margin-top:24px;font-size:11px;color:#aaa;text-align:center;}
+  </style></head><body>
+  <h1>📚 MDPS Academic Schedule</h1>
+  <p>${DB.settings.name} · ${DB.settings.program||'Master of Development & Policy Studies'} · Khulna University · Generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p>
+  <table><thead><tr><th>Event</th><th>Type</th><th>Course</th><th>Due Date</th><th>Status</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <div class="footer">Exported from MDPS Academic Tracker · yeasirarafath.github.io/mdps-academic-tracker</div>
+  </body></html>`;
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mdps-schedule.html';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
 window.addEventListener('load', ()=>{
   applyTheme();
   updateSb();
@@ -2136,5 +2222,8 @@ window.addEventListener('load', ()=>{
   });
 });
 </script>
+
+<!-- Floating Quick-Add Button -->
+<button class="fab" onclick="openAddEvent()" title="Quick add event">＋</button>
 </body>
 </html>
