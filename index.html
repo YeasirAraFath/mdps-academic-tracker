@@ -692,12 +692,20 @@ body.light-mode .nd-inner{background:rgba(61,98,240,0.03);border-color:rgba(61,9
 .ptcard-link:hover{color:var(--blue);}
 /* Task rows */
 .dash-tasks-list{display:flex;flex-direction:column;}
-.dt-row{display:grid;grid-template-columns:12px 1fr 80px 28px;align-items:center;gap:0.75rem;padding:0.72rem 0.6rem;border-radius:10px;cursor:pointer;transition:background 0.13s;border-bottom:1px solid rgba(255,255,255,0.04);}
+.dt-row{display:grid;grid-template-columns:12px 1fr auto 28px;align-items:center;gap:0.75rem;padding:0.72rem 0.6rem;border-radius:10px;cursor:pointer;transition:background 0.13s;border-bottom:1px solid rgba(255,255,255,0.04);}
 .dt-row:last-child{border-bottom:none;}
 .dt-row:hover{background:rgba(79,124,255,0.07);}
-.dt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;align-self:flex-start;}
+.dt-main{display:flex;flex-direction:column;gap:0.2rem;min-width:0;}
 .dt-name{font-size:0.83rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.dt-due{font-size:0.75rem;font-weight:600;font-family:var(--mono);text-align:right;white-space:nowrap;}
+.dt-meta{display:flex;align-items:center;gap:0.35rem;overflow:hidden;}
+.dt-badge{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:0.1rem 0.42rem;border-radius:4px;flex-shrink:0;}
+.dt-badge.ct{background:rgba(255,94,108,0.15);color:var(--ct);}
+.dt-badge.assignment{background:rgba(245,166,35,0.15);color:var(--assign);}
+.dt-badge.presentation{background:rgba(129,140,248,0.15);color:var(--present);}
+.dt-badge.class{background:rgba(52,211,153,0.12);color:var(--class);}
+.dt-teacher{font-size:0.65rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dt-due{font-size:0.75rem;font-weight:600;font-family:var(--mono);text-align:right;white-space:nowrap;flex-shrink:0;}
 .dt-check{width:26px;height:26px;border:1.5px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--text3);cursor:pointer;transition:all 0.15s;flex-shrink:0;}
 .dt-check:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,124,255,0.1);}
 body.light-mode .tasks-section{background:#ffffff;border-color:rgba(60,80,140,0.1);}
@@ -1523,7 +1531,13 @@ function renderTaskList() {
     const dueColor = d<=2?'var(--red)':d<=7?'var(--amber)':'var(--text2)';
     return `<div class="dt-row" onclick="openEditEvent(${e.id})">
       <span class="dt-dot" style="background:${dotColor}"></span>
-      <span class="dt-name">${e.title}</span>
+      <div class="dt-main">
+        <span class="dt-name">${e.title}</span>
+        <div class="dt-meta">
+          <span class="dt-badge ${e.type}">${TL[e.type]||e.type}</span>
+          ${e.teacher?`<span class="dt-teacher">· 👤 ${e.teacher}</span>`:''}
+        </div>
+      </div>
       <span class="dt-due" style="color:${dueColor}">${fmtS(e.date)}</span>
       <span class="dt-check" onclick="event.stopPropagation();toggleDone(${e.id})" title="Mark done">✓</span>
     </div>`;
@@ -2507,6 +2521,40 @@ function fmtSize(b) {
   return (b/1048576).toFixed(1)+' MB';
 }
 
+// ── Upload large file to Google Drive as a publicly accessible file ──
+async function sfUploadFileToDrive(fileName, base64Data, mimeType) {
+  if(!gDriveUser) return null;
+  try {
+    const base64 = base64Data.split(',')[1];
+    const byteChars = atob(base64);
+    const byteArr = new Uint8Array(byteChars.length);
+    for(let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([byteArr], { type: mimeType || 'application/octet-stream' });
+    const meta = JSON.stringify({ name: fileName, parents: ['root'] });
+    const token = gapi.client.getToken();
+    const formData = new FormData();
+    formData.append('metadata', new Blob([meta], { type: 'application/json' }));
+    formData.append('file', blob, fileName);
+    const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token.access_token },
+      body: formData
+    });
+    if(!uploadRes.ok) throw new Error('Upload failed: ' + uploadRes.status);
+    const uploadJson = await uploadRes.json();
+    const fileId = uploadJson.id;
+    await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    });
+    return 'https://drive.google.com/uc?export=download&id=' + fileId;
+  } catch(e) {
+    console.warn('Drive file upload failed:', e);
+    return null;
+  }
+}
+
 // ── Upload files ──
 function sfAddFiles(input) {
   if(document.body.classList.contains('view-only')) return;
@@ -2516,14 +2564,21 @@ function sfAddFiles(input) {
   const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   let saved = 0; const total = files.length;
   sfShowProgress(0, total, 'Uploading');
+  const INLINE_LIMIT = 512000;
   files.forEach(file => {
     const ext = (file.name.split('.').pop()||'').toLowerCase();
     const id = sfNextId();
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       const data = ev.target.result;
+      const mimeType = file.type || 'application/octet-stream';
+      let driveUrl = null;
+      if(file.size >= INLINE_LIMIT && gDriveUser) {
+        sfShowProgress(saved, total, 'Uploading to Drive: ' + file.name);
+        driveUrl = await sfUploadFileToDrive(file.name, data, mimeType);
+      }
       sfSaveToIDB(id, data).then(() => {
-        DB.studyFiles.push({ id, type:'file', name:file.name, ext, size:file.size, folder:sfCurrentFolder, date, data: file.size<512000 ? data : null });
+        DB.studyFiles.push({ id, type:'file', name:file.name, ext, size:file.size, folder:sfCurrentFolder, date, data: file.size<INLINE_LIMIT ? data : null, driveUrl: driveUrl||null });
         saved++;
         sfShowProgress(saved, total, 'Uploading');
         if(saved === total) { persist(); renderSF(); alert('✅ '+total+' file'+(total>1?'s':'')+' uploaded!'); }
@@ -2569,10 +2624,15 @@ function sfAddFolder(input) {
     const ext = (fname.split('.').pop()||'').toLowerCase();
     const id = sfNextId();
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       const data = ev.target.result;
+      let driveUrl = null;
+      if(file.size >= 512000 && gDriveUser) {
+        sfShowProgress(saved, total, 'Uploading to Drive: ' + fname);
+        driveUrl = await sfUploadFileToDrive(fname, data, file.type||'application/octet-stream');
+      }
       sfSaveToIDB(id, data).then(() => {
-        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null });
+        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null, driveUrl: driveUrl||null });
         saved++;
         sfShowProgress(saved, total, 'Uploading folder');
         if(saved === total) { persist(); renderSF(); alert('✅ Folder uploaded: '+total+' file'+(total>1?'s':'')); }
@@ -2631,7 +2691,11 @@ function sfDownload(id) {
   if(!meta||meta.type==='folder') return;
   sfGetFromIDB(id).then(data => {
     const src = data || meta.data;
-    if(!src) { alert('File not available.\n\nThis file is larger than 500KB and was not embedded in the shared link. The owner needs to re-upload it to make it downloadable for friends.'); return; }
+    if(!src) {
+      if(meta.driveUrl) { window.open(meta.driveUrl, '_blank'); }
+      else { alert('File not available.\n\nConnect Google Drive and re-upload this file to enable sharing of large files.'); }
+      return;
+    }
     const a = document.createElement('a');
     a.href = src; a.download = (meta.name||'file').split('/').pop();
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -2721,7 +2785,7 @@ function renderSF() {
     const ic=SF_ICON_CLASS[ext]||'other';
     const icon=SF_ICONS[ext]||'📄';
     const dispName=(item.name||'').split('/').pop();
-    const canDl=!isVO||item.data;
+    const canDl=!isVO||item.data||item.driveUrl;
     return `<div class="sf-card" title="${dispName}">
       <div class="sf-icon ${ic}">${icon}</div>
       <div class="sf-name">${dispName}</div>
