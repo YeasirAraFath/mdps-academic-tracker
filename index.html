@@ -23,7 +23,7 @@
   --sb-w:248px; --header-h:68px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{font-size:15px;scroll-behavior:smooth;}
+html{font-size:16px;scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(79,124,255,0.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(34,211,153,0.07) 0%,transparent 50%),radial-gradient(ellipse 50% 60% at 60% 30%,rgba(129,140,248,0.06) 0%,transparent 50%);pointer-events:none;z-index:0;}
@@ -455,7 +455,11 @@ select.finput{cursor:pointer;}
 <aside class="sidebar" id="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-row">
-      <div class="sb-crest">🎓</div>
+      <div class="sb-crest">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/6f/Khulna_University_logo.svg/200px-Khulna_University_logo.svg.png" 
+             alt="KU" style="width:32px;height:32px;object-fit:contain;"
+             onerror="this.outerHTML='🎓'">
+      </div>
       <div>
         <h1>Master of Development<br>and Policy Studies</h1>
         <p class="ku">Economics Discipline · Khulna University</p>
@@ -941,10 +945,17 @@ let _nextId = () => Date.now();
 let curPage='dashboard', curFilter='all', curSort='date';
 function go(page, filter) {
   curPage = page;
+  // Clear all active states
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll(`.nb[data-p="${page}"]`).forEach(b=>b.classList.add('active'));
+  // Activate the main page nav button (not filter buttons)
   if(filter) {
-    document.querySelectorAll(`.nb[data-f="${filter}"]`).forEach(b=>b.classList.add('active'));
+    // For quick filter: only highlight the specific filter button
+    document.querySelectorAll(`.nb[data-p="${page}"][data-f="${filter}"]`).forEach(b=>b.classList.add('active'));
+  } else {
+    // For normal nav: only highlight buttons without a data-f attribute
+    document.querySelectorAll(`.nb[data-p="${page}"]`).forEach(b=>{
+      if(!b.dataset.f) b.classList.add('active');
+    });
   }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg = document.getElementById('page-'+page);
@@ -967,15 +978,23 @@ document.addEventListener('click', e => {
   }
 });
 
-// GREETING + DATE
-(function(){
-  const h = new Date().getHours();
+// GREETING + LIVE CLOCK
+function updateGreeting() {
+  const now = new Date();
+  const h = now.getHours();
   const emoji = h<12?'🌤':h<17?'☀️':'🌙';
-  const word = h<12?'Good morning':'Good afternoon';
-  const finWord = h>=17?'Good evening':word;
-  document.getElementById('dash-greet').innerHTML = `${finWord}, ${emoji} <span style="color:var(--blue2)">Yasir</span> 👋`;
-  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-})();
+  const word = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const greetEl = document.getElementById('dash-greet');
+  const dateEl = document.getElementById('dash-date');
+  if(greetEl) greetEl.innerHTML = `${word}, ${emoji} <span style="color:var(--blue2)">Yeasir</span> 👋`;
+  if(dateEl) {
+    const datePart = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    dateEl.innerHTML = `${datePart} &nbsp;·&nbsp; <span style="font-family:var(--mono);color:var(--blue2)">${timePart}</span>`;
+  }
+}
+updateGreeting();
+setInterval(updateGreeting, 1000);
 
 // DASHBOARD RENDER
 let upcomingMode = 'upcoming';
@@ -1599,32 +1618,52 @@ function setOwnerMode(v) {
 
 // ── GOOGLE DRIVE ──
 let BAKED_PUBLIC_FILE_ID = '';
-const CLIENT_ID='';
+const CLIENT_ID='486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
 const API_KEY='';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 let gapiInited=false, gisInited=false, tokenClient=null;
 
 function handleDriveClick() {
-  if(!gapiInited){initGapi();return;}
-  if(!gDriveUser) tokenClient?.requestAccessToken({prompt:'consent'});
-  else signOutDrive();
+  if(!gDriveUser) {
+    if(!gapiInited || !gisInited) {
+      setDriveStatus('⏳ Loading...');
+      initGapi();
+    } else {
+      tokenClient?.requestAccessToken({prompt:''});
+    }
+  } else {
+    signOutDrive();
+  }
 }
 
 function initGapi() {
-  if(typeof gapi==='undefined') {
-    const s=document.createElement('script');s.src='https://apis.google.com/js/api.js';
-    s.onload=()=>{gapi.load('client',async()=>{
-      await gapi.client.init({apiKey:API_KEY,discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']});
+  const s=document.createElement('script');
+  s.src='https://apis.google.com/js/api.js';
+  s.onload=()=>{
+    gapi.load('client', async()=>{
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+      });
       gapiInited=true;
-      const gs=document.createElement('script');gs.src='https://accounts.google.com/gsi/client';
+      const gs=document.createElement('script');
+      gs.src='https://accounts.google.com/gsi/client';
       gs.onload=()=>{
-        tokenClient=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:(r)=>{if(r.error) return;onDriveSignIn();}});
-        gisInited=true;tokenClient.requestAccessToken({prompt:'consent'});
+        tokenClient=google.accounts.oauth2.initTokenClient({
+          client_id:CLIENT_ID,
+          scope:SCOPES,
+          callback:(r)=>{ if(r.error){setDriveStatus('❌ Auth failed');return;} onDriveSignIn(); }
+        });
+        gisInited=true;
+        setDriveStatus('');
+        // Auto-trigger sign in after load
+        tokenClient.requestAccessToken({prompt:''});
       };
       document.head.appendChild(gs);
-    })};
-    document.head.appendChild(s);
-  }
+    });
+  };
+  s.onerror=()=>setDriveStatus('❌ Load failed');
+  document.head.appendChild(s);
 }
 
 async function onDriveSignIn() {
