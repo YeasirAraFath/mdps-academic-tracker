@@ -1965,70 +1965,69 @@ async function loadFromDrive() {
   } catch(e){ console.warn('Drive load err',e); }
 }
 
+// ── JSONBIN SHARING (replaces Google Drive public sharing) ──
+// JSONBin.io is a free JSON storage service with proper CORS — works perfectly in browsers
+const JSONBIN_API_KEY = '$2a$10$mMECUHbIMBe7BRvqkNzKPuW5H3amBaXwk7p0CRFr3rYzB6U2BHiHa';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
+
 async function publishPublicSnapshot() {
-  const token = gapi.client.getToken()?.access_token;
-  if(!token) return;
+  if(!gDriveUser) return;
   try {
     const pubData = {
       events: DB.events,
       teachers: DB.teachers,
       courseNotes: DB.courseNotes,
-      settings: { name: DB.settings.name, id: DB.settings.id, program: DB.settings.program, photo: DB.settings.photo, publicFileId: DB.settings.publicFileId || '' },
+      settings: { name: DB.settings.name, id: DB.settings.id, program: DB.settings.program, photo: DB.settings.photo },
       _published: new Date().toISOString(),
-      _v: Date.now() // version stamp so cache is always busted
+      _v: Date.now()
     };
-    let pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
 
-    if(!pubFileId) {
-      // Create the public file
-      const boundary = '-------271828182845'; const CRLF = '\r\n';
-      const meta = { name: 'mdps-tracker-public.json' };
-      const mp = '--'+boundary+CRLF+'Content-Type: application/json'+CRLF+CRLF+JSON.stringify(meta)+CRLF+'--'+boundary+CRLF+'Content-Type: application/json'+CRLF+CRLF+JSON.stringify(pubData)+CRLF+'--'+boundary+'--';
-      const cr = await gapi.client.request({ path: 'https://www.googleapis.com/upload/drive/v3/files', method: 'POST', params: { uploadType: 'multipart' }, headers: { 'Content-Type': 'multipart/related; boundary="'+boundary+'"' }, body: mp });
-      pubFileId = cr.result.id;
-      // Make it public readable
-      await gapi.client.request({ path: `https://www.googleapis.com/drive/v3/files/${pubFileId}/permissions`, method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
-      // Set no-cache so friends always get fresh data
-      await gapi.client.request({ path: `https://www.googleapis.com/drive/v3/files/${pubFileId}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ } ) });
-      localStorage.setItem('mdps-public-file-id', pubFileId);
-      DB.settings.publicFileId = pubFileId;
-      BAKED_PUBLIC_FILE_ID = pubFileId;
-      persist();
-      // Show share URL
-      const shareUrl = `${location.origin}${location.pathname}?view=1&id=${pubFileId}`;
-      localStorage.setItem('mdps-share-url', shareUrl);
-    } else {
-      // Always overwrite with latest data
-      await gapi.client.request({
-        path: `https://www.googleapis.com/upload/drive/v3/files/${pubFileId}`,
-        method: 'PATCH',
-        params: { uploadType: 'media' },
-        headers: { 'Content-Type': 'application/json' },
+    let binId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+
+    if(!binId) {
+      // Create a new public bin
+      const res = await fetch(`${JSONBIN_BASE}/b`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_API_KEY,
+          'X-Bin-Name': 'mdps-tracker',
+          'X-Bin-Private': 'false'
+        },
         body: JSON.stringify(pubData)
       });
-      // Patch metadata to update modifiedTime — forces Drive CDN to serve fresh content
-      await gapi.client.request({
-        path: `https://www.googleapis.com/drive/v3/files/${pubFileId}`,
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ properties: { lastSync: String(Date.now()) } })
+      const json = await res.json();
+      binId = json.metadata.id;
+      DB.settings.publicFileId = binId;
+      BAKED_PUBLIC_FILE_ID = binId;
+      localStorage.setItem('mdps-public-file-id', binId);
+      const shareUrl = `${location.origin}${location.pathname}?view=1&id=${binId}`;
+      localStorage.setItem('mdps-share-url', shareUrl);
+      persist();
+    } else {
+      // Update existing bin
+      await fetch(`${JSONBIN_BASE}/b/${binId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_API_KEY
+        },
+        body: JSON.stringify(pubData)
       });
-      BAKED_PUBLIC_FILE_ID = pubFileId;
+      BAKED_PUBLIC_FILE_ID = binId;
     }
     setDriveStatus('✅ Synced · ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    updateShareUrl(pubFileId);
+    updateShareUrl(binId);
   } catch(e) {
     console.warn('Public publish failed:', e);
-    setDriveStatus('✅ Saved locally');
+    setDriveStatus('⚠️ Sync failed');
   }
 }
 
-function updateShareUrl(fileId) {
-  if(!fileId) return;
-  const url = `${location.origin}${location.pathname}?view=1&id=${fileId}`;
+function updateShareUrl(binId) {
+  if(!binId) return;
+  const url = `${location.origin}${location.pathname}?view=1&id=${binId}`;
   localStorage.setItem('mdps-share-url', url);
-  const el = document.getElementById('gdrive-status');
-  if(el && gDriveUser) el.title = 'Share: ' + url;
 }
 
 function getRelativeTime(iso) {
@@ -2048,48 +2047,30 @@ function showLastUpdated(iso) {
 }
 
 async function tryLoadPublicData() {
-  const pubFileId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
-  if(!pubFileId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
+  const binId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if(!binId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
   try {
     setDriveStatus('🔄 Loading...');
-    const cb = Date.now();
-    // googleapis direct API URL MUST be first — drive.google.com/uc is deprecated
-    // and returns HTML pages that silently break JSON parsing
-    // Try multiple strategies to fetch the public JSON file
-    const urls = [
-      // Strategy 1: Direct Drive download (works if file is truly public + CORS ok)
-      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=t&cachebust=${cb}`,
-      // Strategy 2: CORS proxy as reliable fallback
-      `https://corsproxy.io/?https://drive.google.com/uc?export=download%26id=${pubFileId}%26confirm=t%26cachebust=${cb}`,
-      // Strategy 3: Another CORS proxy
-      `https://api.allorigins.win/raw?url=${encodeURIComponent('https://drive.google.com/uc?export=download&id='+pubFileId+'&confirm=t&cachebust='+cb)}`,
-    ];
-    let pubData = null;
-    for(const url of urls) {
-      try {
-        const r = await fetch(url, { cache: 'no-store' });
-        if(!r.ok) continue;
-        const text = await r.text();
-        const trimmed = text.trim();
-        if(!trimmed.startsWith('{')) continue;
-        pubData = JSON.parse(trimmed);
-        console.log('✅ Loaded public data via:', url);
-        break;
-      } catch(e) { console.warn('Fetch attempt failed:', url, e); }
-    }
-    if(!pubData) throw new Error('All fetch attempts failed');
+    // JSONBin has proper CORS — works perfectly from any browser
+    const r = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`, {
+      cache: 'no-store',
+      headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    if(!r.ok) throw new Error('JSONBin fetch failed: ' + r.status);
+    const json = await r.json();
+    const pubData = json.record;
+    if(!pubData || !pubData.events) throw new Error('Invalid data');
     DB = {
       events: pubData.events || DB.events,
       teachers: pubData.teachers || DB.teachers,
       courseNotes: pubData.courseNotes || DB.courseNotes,
-      settings: { ...DB.settings, ...pubData.settings, publicFileId: pubFileId }
+      settings: { ...DB.settings, ...pubData.settings, publicFileId: binId }
     };
     setOwnerMode(false);
     showViewOnlyNotice(DB.settings.name);
     showLastUpdated(pubData._published);
     setDriveStatus('');
     refresh(); updateSb();
-    // Auto-refresh every 30 seconds so friends always see latest
     setTimeout(tryLoadPublicData, 30000);
   } catch(e) {
     console.warn('Public load failed:', e);
