@@ -854,7 +854,14 @@ function go(page,filter){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll(`.nb[data-p="${page}"]`).forEach(b=>b.classList.add('active'));
+  if(filter){
+    // Quick filter click — only highlight the matching filter button
+    const match = document.querySelector(`.nb[data-p="${page}"][data-f="${filter}"]`);
+    if(match) match.classList.add('active');
+  } else {
+    // Regular page click — highlight buttons without a data-f attribute
+    document.querySelectorAll(`.nb[data-p="${page}"]:not([data-f])`).forEach(b=>b.classList.add('active'));
+  }
   if(filter){cf=filter;document.querySelectorAll('#ev-chips .chip').forEach(c=>c.classList.toggle('active',c.dataset.f===filter));}
   if(page==='dashboard')renderDash();
   if(page==='calendar')renderCal3();
