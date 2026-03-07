@@ -2507,6 +2507,41 @@ function fmtSize(b) {
   return (b/1048576).toFixed(1)+' MB';
 }
 
+// ── Upload large file to Google Drive as a publicly accessible file ──
+async function sfUploadFileToDrive(fileName, base64Data, mimeType) {
+  if(!gDriveUser) return null;
+  try {
+    const base64 = base64Data.split(',')[1];
+    const byteChars = atob(base64);
+    const byteArr = new Uint8Array(byteChars.length);
+    for(let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([byteArr], { type: mimeType || 'application/octet-stream' });
+    const meta = JSON.stringify({ name: fileName, parents: ['root'] });
+    const token = gapi.client.getToken();
+    const formData = new FormData();
+    formData.append('metadata', new Blob([meta], { type: 'application/json' }));
+    formData.append('file', blob, fileName);
+    const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token.access_token },
+      body: formData
+    });
+    if(!uploadRes.ok) throw new Error('Upload failed: ' + uploadRes.status);
+    const uploadJson = await uploadRes.json();
+    const fileId = uploadJson.id;
+    // Make file publicly readable via link
+    await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    });
+    return 'https://drive.google.com/uc?export=download&id=' + fileId;
+  } catch(e) {
+    console.warn('Drive file upload failed:', e);
+    return null;
+  }
+}
+
 // ── Upload files ──
 function sfAddFiles(input) {
   if(document.body.classList.contains('view-only')) return;
@@ -2516,20 +2551,32 @@ function sfAddFiles(input) {
   const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   let saved = 0; const total = files.length;
   sfShowProgress(0, total, 'Uploading');
+  const INLINE_LIMIT = 512000; // 500KB — small files embedded inline, large files go to Drive
   files.forEach(file => {
     const ext = (file.name.split('.').pop()||'').toLowerCase();
     const id = sfNextId();
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       const data = ev.target.result;
+      const mimeType = file.type || 'application/octet-stream';
+      let driveUrl = null;
+      if(file.size >= INLINE_LIMIT && gDriveUser) {
+        sfShowProgress(saved, total, 'Uploading to Drive (' + file.name + ')');
+        driveUrl = await sfUploadFileToDrive(file.name, data, mimeType);
+      }
       sfSaveToIDB(id, data).then(() => {
-        DB.studyFiles.push({ id, type:'file', name:file.name, ext, size:file.size, folder:sfCurrentFolder, date, data: file.size<512000 ? data : null });
+        DB.studyFiles.push({
+          id, type: 'file', name: file.name, ext, size: file.size,
+          folder: sfCurrentFolder, date,
+          data: file.size < INLINE_LIMIT ? data : null,
+          driveUrl: driveUrl || null
+        });
         saved++;
         sfShowProgress(saved, total, 'Uploading');
-        if(saved === total) { persist(); renderSF(); alert('✅ '+total+' file'+(total>1?'s':'')+' uploaded!'); }
-      }).catch(err => alert('Upload failed: '+err.message));
+        if(saved === total) { persist(); renderSF(); alert('✅ ' + total + ' file' + (total > 1 ? 's' : '') + ' uploaded!'); }
+      }).catch(err => alert('Upload failed: ' + err.message));
     };
-    reader.onerror = () => alert('Could not read: '+file.name);
+    reader.onerror = () => alert('Could not read: ' + file.name);
     reader.readAsDataURL(file);
   });
   input.value = '';
@@ -2569,10 +2616,15 @@ function sfAddFolder(input) {
     const ext = (fname.split('.').pop()||'').toLowerCase();
     const id = sfNextId();
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       const data = ev.target.result;
+      let driveUrl = null;
+      if(file.size >= 512000 && gDriveUser) {
+        sfShowProgress(saved, total, 'Uploading to Drive (' + fname + ')');
+        driveUrl = await sfUploadFileToDrive(fname, data, file.type || 'application/octet-stream');
+      }
       sfSaveToIDB(id, data).then(() => {
-        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null });
+        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null, driveUrl: driveUrl||null });
         saved++;
         sfShowProgress(saved, total, 'Uploading folder');
         if(saved === total) { persist(); renderSF(); alert('✅ Folder uploaded: '+total+' file'+(total>1?'s':'')); }
@@ -2631,7 +2683,11 @@ function sfDownload(id) {
   if(!meta||meta.type==='folder') return;
   sfGetFromIDB(id).then(data => {
     const src = data || meta.data;
-    if(!src) { alert('File not available.\n\nThis file is larger than 500KB and was not embedded in the shared link. The owner needs to re-upload it to make it downloadable for friends.'); return; }
+    if(!src) {
+      if(meta.driveUrl) { window.open(meta.driveUrl, '_blank'); }
+      else { alert('File not available for download.\n\nConnect Google Drive and re-upload this file to enable sharing of large files.'); }
+      return;
+    }
     const a = document.createElement('a');
     a.href = src; a.download = (meta.name||'file').split('/').pop();
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -2721,13 +2777,13 @@ function renderSF() {
     const ic=SF_ICON_CLASS[ext]||'other';
     const icon=SF_ICONS[ext]||'📄';
     const dispName=(item.name||'').split('/').pop();
-    const canDl=!isVO||item.data;
+    const canDl=!isVO||item.data||item.driveUrl;
     return `<div class="sf-card" title="${dispName}">
       <div class="sf-icon ${ic}">${icon}</div>
       <div class="sf-name">${dispName}</div>
       <div class="sf-meta">${ext?ext.toUpperCase()+' · ':''}${fmtSize(item.size)}${item.date?' · '+item.date:''}</div>
       <div class="sf-actions">
-        ${canDl?`<button class="sf-btn" onclick="sfDownload('${item.id}')">⬇ Download</button>`:`<span style="font-size:0.62rem;color:var(--text3)">Too large to share</span>`}
+        ${canDl?`<button class="sf-btn" onclick="sfDownload('${item.id}')">⬇ Download</button>`:`<span style="font-size:0.62rem;color:var(--text3)">Connect Drive to share</span>`}
         ${!isVO?`<button class="sf-btn del" onclick="sfDelete('${item.id}')">🗑</button>`:''}
       </div>
     </div>`;
