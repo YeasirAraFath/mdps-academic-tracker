@@ -1735,7 +1735,11 @@ function openDetail(id) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;font-size:0.78rem">
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">DATE</div>${fmtD(e.date)}</div>
-      <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">STATUS</div>${e.done?'<span style="color:var(--class)">✓ Completed</span>':'<span style="color:var(--assign)">⏳ Pending</span>'}</div>
+      <div>
+        <div style="font-size:0.6rem;color:var(--text3);margin-bottom:4px">STATUS</div>
+        <button onclick="toggleDoneFromDetail(${e.id})" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;cursor:pointer;font-size:0.72rem;font-weight:700;transition:all 0.15s;background:${e.done?'rgba(52,211,153,0.15)':'rgba(245,166,35,0.15)'};color:${e.done?'var(--class)':'var(--assign)'};border:1px solid ${e.done?'rgba(52,211,153,0.4)':'rgba(245,166,35,0.4)'}">${e.done?'✅ Completed':'⏳ Pending'}</button>
+        <div style="font-size:0.6rem;color:var(--text3);margin-top:3px">${e.done?'tap to mark pending':'tap to mark complete'}</div>
+      </div>
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">COURSE</div>${e.course||'—'}</div>
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">TEACHER</div>${e.teacher||'—'}</div>
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">SEMESTER</div>${e.semester||'—'}</div>
@@ -1744,6 +1748,13 @@ function openDetail(id) {
     ${e.notes?`<div style="margin-top:0.9rem;font-size:0.75rem;color:var(--text2);background:var(--bg2);border-radius:var(--rsm);padding:0.6rem 0.8rem;border:1px solid var(--border)">${e.notes}</div>`:''}
   `;
   document.getElementById('ov-detail').classList.add('open');
+}
+function toggleDoneFromDetail(id) {
+  const e = DB.events.find(x=>x.id===id);
+  if(!e) return;
+  e.done = !e.done;
+  persist(); refresh();
+  openDetail(id);
 }
 function closeDetail() { document.getElementById('ov-detail').classList.remove('open'); }
 function editFromDetail() { closeDetail(); if(detailId) openEditEvent(detailId); }
