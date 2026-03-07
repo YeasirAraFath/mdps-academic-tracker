@@ -1965,14 +1965,11 @@ async function loadFromDrive() {
   } catch(e){ console.warn('Drive load err',e); }
 }
 
-// ── PUBLIC SHARING ──
-// Uses Google Drive API (with your auth token) to WRITE data,
-// and allorigins.win proxy to READ it — this solves CORS completely.
+// ── PUBLIC SHARING via jsonblob.com ──
+// Free JSON storage: no CORS, no auth to read, simple PUT/GET REST API.
 
 async function publishPublicSnapshot() {
   if(!gDriveUser) return;
-  const token = gapi.client.getToken()?.access_token;
-  if(!token) return;
   try {
     const pubData = {
       events: DB.events,
@@ -1983,60 +1980,37 @@ async function publishPublicSnapshot() {
       _v: Date.now()
     };
 
-    let pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+    let blobId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
 
-    if(!pubFileId) {
-      // Step 1: Create file
-      const boundary = '-------mdpsboundary123';
-      const meta = JSON.stringify({ name: 'mdps-tracker-public.json' });
-      const body = '--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + meta +
-                   '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(pubData) +
-                   '\r\n--' + boundary + '--';
-      const cr = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    if(!blobId) {
+      // Create new blob
+      const cr = await fetch('https://jsonblob.com/api/jsonBlob', {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-        },
-        body: body
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(pubData)
       });
       if(!cr.ok) throw new Error('Create failed: ' + cr.status);
-      const crJson = await cr.json();
-      pubFileId = crJson.id;
-
-      // Step 2: Make it public (anyone can read)
-      await fetch('https://www.googleapis.com/drive/v3/files/' + pubFileId + '/permissions', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'reader', type: 'anyone' })
-      });
-
-      DB.settings.publicFileId = pubFileId;
-      BAKED_PUBLIC_FILE_ID = pubFileId;
-      localStorage.setItem('mdps-public-file-id', pubFileId);
-      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + pubFileId);
+      const loc = cr.headers.get('Location') || '';
+      blobId = loc.split('/').pop();
+      if(!blobId) { const j = await cr.json(); blobId = j.id || ''; }
+      if(!blobId) throw new Error('No blob ID returned from jsonblob');
+      DB.settings.publicFileId = blobId;
+      BAKED_PUBLIC_FILE_ID = blobId;
+      localStorage.setItem('mdps-public-file-id', blobId);
+      localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + blobId);
       persist();
     } else {
-      // Update existing file content
-      const upd = await fetch('https://www.googleapis.com/upload/drive/v3/files/' + pubFileId + '?uploadType=media', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
+      // Update existing blob
+      const upd = await fetch('https://jsonblob.com/api/jsonBlob/' + blobId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(pubData)
       });
       if(!upd.ok) throw new Error('Update failed: ' + upd.status);
-      // Re-apply public permission on every update (in case it was reset)
-      await fetch('https://www.googleapis.com/drive/v3/files/' + pubFileId + '/permissions', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'reader', type: 'anyone' })
-      }).catch(() => {}); // ignore if already exists
-      BAKED_PUBLIC_FILE_ID = pubFileId;
+      BAKED_PUBLIC_FILE_ID = blobId;
     }
     setDriveStatus('\u2705 Synced \u00b7 ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + pubFileId);
+    localStorage.setItem('mdps-share-url', location.origin + location.pathname + '?view=1&id=' + blobId);
   } catch(e) {
     console.warn('Publish failed:', e);
     setDriveStatus('\u26a0\ufe0f Sync failed: ' + e.message);
@@ -2070,34 +2044,13 @@ async function tryLoadPublicData() {
   if(!pubFileId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
   try {
     setDriveStatus('\ud83d\udd04 Loading...');
-    const cb = Date.now();
-    // Try multiple proxy/URL strategies to handle Google Drive's redirect/scan pages
-    let text = '';
-    const driveUrls = [
-      'https://drive.google.com/uc?export=download&confirm=t&id=' + pubFileId,
-      'https://drive.google.com/uc?export=download&id=' + pubFileId,
-    ];
-    let lastErr = '';
-    for (const driveUrl of driveUrls) {
-      for (const proxy of [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?url=',
-      ]) {
-        try {
-          const proxyUrl = proxy + encodeURIComponent(driveUrl + '&t=' + cb);
-          const r = await fetch(proxyUrl, { cache: 'no-store' });
-          if (!r.ok) { lastErr = 'HTTP ' + r.status; continue; }
-          const t = await r.text();
-          if (t.trim().startsWith('{')) { text = t; break; }
-          lastErr = 'Not JSON: ' + t.substring(0, 60);
-        } catch(fe) { lastErr = fe.message; }
-      }
-      if (text) break;
-    }
-    if (!text) throw new Error('All proxies failed: ' + lastErr);
-    const trimmed = text.trim();
-    if(!trimmed.startsWith('{')) throw new Error('Not JSON: ' + trimmed.substring(0, 80));
-    const pubData = JSON.parse(trimmed);
+    // jsonblob.com: direct GET, no CORS, always returns JSON
+    const r = await fetch('https://jsonblob.com/api/jsonBlob/' + pubFileId, {
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store'
+    });
+    if(!r.ok) throw new Error('Fetch failed: ' + r.status);
+    const pubData = await r.json();
     if(!pubData.events) throw new Error('Missing events');
     DB = {
       events: pubData.events,
@@ -2119,7 +2072,6 @@ async function tryLoadPublicData() {
     setTimeout(tryLoadPublicData, 20000);
   }
 }
-
 function copyShareUrl() {
   const url = localStorage.getItem('mdps-share-url');
   if(!url || !gDriveUser) return;
