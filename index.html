@@ -65,8 +65,14 @@ body.light-mode .set-btn:hover { background: rgba(61,98,240,0.08) !important; co
 body.light-mode .sb-footer { border-top-color: rgba(60,80,140,0.1) !important; }
 
 /* Topbar */
-body.light-mode .topbar-l h2 { color: #0d1526 !important; }
-body.light-mode .topbar-l p { color: #8a9bb8 !important; }
+body.light-mode .topbar-l h2, body.light-mode .dash-greeting { color: #0d1526 !important; font-weight: 700 !important; }
+body.light-mode .export-pdf-btn { background: #ffffff !important; border-color: rgba(60,80,140,0.16) !important; color: #4a5872 !important; }
+body.light-mode .export-pdf-btn:hover { background: rgba(61,98,240,0.06) !important; color: var(--blue) !important; }
+body.light-mode .dash-btn-group { border-color: rgba(60,80,140,0.16) !important; }
+body.light-mode .dash-btn-group .export-pdf-btn { border-right-color: rgba(60,80,140,0.16) !important; }
+body.light-mode .nd-btn { background: #f5f7ff !important; border-color: rgba(61,98,240,0.15) !important; color: #4a5872 !important; }
+body.light-mode .nd-btn:hover { background: rgba(61,98,240,0.08) !important; color: var(--blue) !important; }
+body.light-mode .mobile-menu { background: #ffffff !important; border-color: rgba(60,80,140,0.16) !important; color: #4a5872 !important; }
 
 /* Buttons */
 body.light-mode .btn-ghost { background: #ffffff !important; border-color: rgba(60,80,140,0.16) !important; color: #4a5872 !important; }
@@ -202,7 +208,7 @@ body.view-only .save-note{display:none!important;}
 body.view-only .crs-notes{pointer-events:none;}
 .view-badge{display:none;background:rgba(129,140,248,0.12);border:1px solid rgba(129,140,248,0.3);color:var(--present);font-size:0.62rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;letter-spacing:0.06em;text-transform:uppercase;align-items:center;gap:0.3rem;backdrop-filter:blur(8px);}
 body.view-only .view-badge{display:flex;}
-.owner-badge{display:none;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--class);font-size:0.62rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;letter-spacing:0.06em;text-transform:uppercase;align-items:center;gap:0.3rem;backdrop-filter:blur(8px);}
+.owner-badge{display:none;background:rgba(79,124,255,0.1);border:1px solid rgba(79,124,255,0.3);color:var(--blue2);font-size:0.62rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;letter-spacing:0.06em;text-transform:uppercase;align-items:center;gap:0.3rem;backdrop-filter:blur(8px);}
 body.owner-mode .owner-badge{display:flex;}
 
 /* COUNTDOWN CARDS */
@@ -247,17 +253,17 @@ body.owner-mode .owner-badge{display:flex;}
 .pp-info{min-width:0;}
 .pp-name{font-size:0.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .pp-id{font-size:0.6rem;color:var(--text3);font-family:var(--mono);}
-.pp-dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 6px var(--green);flex-shrink:0;}
+.pp-dot{width:10px;height:10px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 8px var(--green);flex-shrink:0;border:2px solid var(--card);}
 
 /* Nav */
 .sb-nav{padding:0.5rem 0.7rem;flex:1;}
-.ng-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);padding:0.7rem 0.5rem 0.3rem;}
+.ng-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text2);padding:0.7rem 0.5rem 0.3rem;font-weight:600;}
 .nb{display:flex;align-items:center;gap:0.6rem;width:100%;padding:0.5rem 0.72rem;border-radius:var(--rsm);border:none;background:none;color:var(--text2);font-family:var(--font);font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.13s;text-align:left;margin-bottom:1px;position:relative;}
 .nb:hover{background:rgba(255,255,255,0.05);color:var(--text);}
 .nb.active{background:linear-gradient(135deg,rgba(79,124,255,0.18),rgba(79,124,255,0.08));color:var(--blue2);font-weight:600;border:1px solid rgba(79,124,255,0.22);box-shadow:0 2px 12px rgba(79,124,255,0.1);}
 .nb .ni{font-size:0.85rem;width:16px;flex-shrink:0;}
 .nb .ndot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.nb .nc{margin-left:auto;font-size:0.6rem;font-family:var(--mono);background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:999px;}
+.nb .nc{margin-left:auto;font-size:0.62rem;font-family:var(--mono);background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:999px;min-width:18px;text-align:center;line-height:1.4;}
 .nb.active .nc{background:rgba(79,124,255,0.22);color:var(--blue2);}
 .sb-footer{padding:0.7rem;border-top:1px solid var(--border);}
 .set-btn{width:100%;display:flex;align-items:center;gap:0.5rem;padding:0.48rem 0.7rem;border-radius:var(--rsm);border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text2);font-family:var(--font);font-size:0.76rem;cursor:pointer;transition:all 0.15s;backdrop-filter:blur(8px);}
@@ -272,7 +278,7 @@ body.owner-mode .owner-badge{display:flex;}
 .topbar-l h2{font-size:1.3rem;font-weight:700;letter-spacing:-0.03em;}
 .topbar-l p{font-size:0.7rem;color:var(--text3);margin-top:2px;font-family:var(--mono);}
 .topbar-r{display:flex;gap:0.45rem;flex-wrap:wrap;align-items:center;}
-.mobile-menu{display:none;background:var(--card);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:var(--rsm);cursor:pointer;font-size:1rem;align-items:center;justify-content:center;}
+.mobile-menu{display:none;background:var(--card);border:1px solid var(--border);color:var(--text);height:34px;border-radius:var(--rsm);cursor:pointer;font-size:0.75rem;font-weight:600;align-items:center;justify-content:center;gap:0.3rem;padding:0 0.7rem;}
 @media(max-width:820px){.mobile-menu{display:flex;}}
 
 /* PAGE CONTENT */
@@ -319,7 +325,7 @@ body.owner-mode .owner-badge{display:flex;}
 /* SEC HEADER */
 .sec-header{display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;}
 .sec-title{font-size:0.95rem;font-weight:700;color:var(--text);}
-.sec-count{margin-left:auto;font-size:0.68rem;font-family:var(--mono);color:var(--text2);}
+.sec-count{margin-left:auto;font-size:0.68rem;font-family:var(--mono);color:var(--text2);align-self:center;}
 .sec-tabs{display:flex;gap:0.4rem;margin-left:0.4rem;}
 .sec-tab{padding:0.25rem 0.7rem;border-radius:999px;font-size:0.7rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text2);transition:all 0.15s;}
 .sec-tab.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-color:transparent;box-shadow:0 2px 10px var(--glow-blue);}
@@ -607,9 +613,9 @@ select.finput{cursor:pointer;}
 /* MOBILE */
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
 .sb-overlay.show{display:block;}
-.sb-toggle-btn{display:none;position:fixed;bottom:1.4rem;right:1.4rem;z-index:150;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));border:none;color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px var(--glow-blue);align-items:center;justify-content:center;}
+.sb-toggle-btn{display:none;}
 @media(max-width:820px){
-  .sb-toggle-btn{display:flex;}
+  .sb-toggle-btn{display:none!important;}
   .sidebar{position:fixed;left:0;top:0;z-index:100;height:100%;transform:translateX(-110%);transition:transform 0.3s ease;}
   .sidebar.open{transform:translateX(0);}
   .main{max-width:100vw;}
@@ -637,6 +643,9 @@ body.light-mode .ecard.soon{border-color:rgba(196,122,0,0.4)!important;box-shado
 .export-pdf-btn{display:flex;align-items:center;gap:0.4rem;padding:0.35rem 0.85rem;border-radius:var(--rsm);background:var(--bg2);border:1px solid var(--border2);color:var(--text2);font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.15s;}
 .export-pdf-btn:hover{background:rgba(99,102,241,0.12);border-color:var(--accent);color:var(--accent);}
 body.view-only .export-pdf-btn{display:none!important;}
+.dash-btn-group{display:flex;gap:0;border:1px solid var(--border2);border-radius:var(--rsm);overflow:hidden;}
+.dash-btn-group .export-pdf-btn{border:none;border-right:1px solid var(--border2);border-radius:0;}
+.dash-btn-group .export-pdf-btn:last-child{border-right:none;}
 
 /* ══ NEW DASHBOARD LAYOUT ══ */
 
@@ -668,21 +677,27 @@ body.light-mode .dash-topbar{border-bottom-color:rgba(60,80,140,0.12);}
 .nd-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.3rem 1.5rem;box-shadow:var(--sh);}
 .nd-hdr{display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;}
 .nd-dot{width:10px;height:10px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,0.6);flex-shrink:0;}
-.nd-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--text2);}
+.nd-label{font-size:0.75rem;font-weight:700;letter-spacing:0.02em;color:var(--text2);}
 .nd-inner{background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
 .nd-info{flex:1;min-width:0;}
 .nd-title{font-size:1.2rem;font-weight:800;color:var(--text);letter-spacing:-0.025em;margin-bottom:0.3rem;line-height:1.3;}
 .nd-course{font-size:0.72rem;color:var(--blue2);cursor:pointer;transition:color 0.15s;}
 .nd-course:hover{color:var(--blue);}
-.nd-btns{display:flex;gap:0.55rem;margin-top:1.1rem;flex-wrap:wrap;}
-.nd-btn{padding:0.42rem 1.05rem;border-radius:8px;font-size:0.73rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:rgba(255,255,255,0.04);color:var(--text2);transition:all 0.15s;font-family:var(--font);}
+.nd-btns{display:flex;gap:0.55rem;margin-top:1.1rem;flex-wrap:nowrap;}
+.nd-btn{padding:0.42rem 1.05rem;border-radius:8px;font-size:0.73rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:rgba(255,255,255,0.04);color:var(--text2);transition:all 0.15s;font-family:var(--font);white-space:nowrap;}
 .nd-btn:hover{background:rgba(255,255,255,0.1);color:var(--text);}
 .nd-counter{text-align:right;flex-shrink:0;padding-top:0.2rem;}
-.nd-num{font-size:2.8rem;font-weight:900;line-height:1;font-family:var(--mono);letter-spacing:-0.05em;}
+.nd-num{font-size:2.8rem;font-weight:900;line-height:1;font-family:var(--mono);letter-spacing:-0.05em;-webkit-text-stroke:0;text-stroke:0;}
 .nd-unit{font-size:0.7rem;font-weight:700;text-transform:lowercase;margin-top:0.2rem;font-family:var(--mono);}
 .nd-unit2{font-size:0.58rem;color:var(--text3);font-family:var(--mono);margin-top:0.1rem;}
 body.light-mode .nd-card{background:#ffffff;border-color:rgba(60,80,140,0.1);}
 body.light-mode .nd-inner{background:rgba(61,98,240,0.03);border-color:rgba(61,98,240,0.1);}
+@media(max-width:820px){
+  .nd-card{padding:1rem 1.1rem;}
+  .nd-inner{padding:0.9rem 1rem;}
+  .nd-title{font-size:1rem;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .nd-num{font-size:2.2rem;font-weight:900;-webkit-text-stroke:0!important;}
+}
 
 /* ── Tasks Section ── */
 .tasks-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.3rem 1.5rem;box-shadow:var(--sh);}
@@ -692,22 +707,19 @@ body.light-mode .nd-inner{background:rgba(61,98,240,0.03);border-color:rgba(61,9
 .ptcard-link:hover{color:var(--blue);}
 /* Task rows */
 .dash-tasks-list{display:flex;flex-direction:column;}
-.dt-row{display:grid;grid-template-columns:12px 1fr auto 28px;align-items:center;gap:0.75rem;padding:0.72rem 0.6rem;border-radius:10px;cursor:pointer;transition:background 0.13s;border-bottom:1px solid rgba(255,255,255,0.04);}
+.dt-row{display:grid;grid-template-columns:12px 1fr 80px 28px;align-items:center;gap:0.75rem;padding:0.72rem 0.6rem;border-radius:10px;cursor:pointer;transition:background 0.13s;border-bottom:1px solid rgba(255,255,255,0.04);}
 .dt-row:last-child{border-bottom:none;}
 .dt-row:hover{background:rgba(79,124,255,0.07);}
-.dt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;align-self:flex-start;}
-.dt-main{display:flex;flex-direction:column;gap:0.2rem;min-width:0;}
-.dt-name{font-size:0.83rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.dt-meta{display:flex;align-items:center;gap:0.35rem;overflow:hidden;}
-.dt-badge{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:0.1rem 0.42rem;border-radius:4px;flex-shrink:0;}
-.dt-badge.ct{background:rgba(255,94,108,0.15);color:var(--ct);}
-.dt-badge.assignment{background:rgba(245,166,35,0.15);color:var(--assign);}
-.dt-badge.presentation{background:rgba(129,140,248,0.15);color:var(--present);}
-.dt-badge.class{background:rgba(52,211,153,0.12);color:var(--class);}
-.dt-teacher{font-size:0.65rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.dt-due{font-size:0.75rem;font-weight:600;font-family:var(--mono);text-align:right;white-space:nowrap;flex-shrink:0;}
+.dt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dt-name{font-size:0.83rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dt-due{font-size:0.75rem;font-weight:600;font-family:var(--mono);text-align:right;white-space:nowrap;}
 .dt-check{width:26px;height:26px;border:1.5px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--text3);cursor:pointer;transition:all 0.15s;flex-shrink:0;}
 .dt-check:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,124,255,0.1);}
+@media(max-width:820px){
+  .dt-row{grid-template-columns:10px 1fr 68px 26px;gap:0.5rem;padding:0.65rem 0.4rem;}
+  .dt-name{font-size:0.8rem;}
+  .dt-due{font-size:0.68rem;}
+}
 body.light-mode .tasks-section{background:#ffffff;border-color:rgba(60,80,140,0.1);}
 body.light-mode .dt-row:hover{background:rgba(61,98,240,0.06);}
 body.light-mode .dt-row{border-bottom-color:rgba(60,80,140,0.07);}
@@ -744,7 +756,7 @@ body.light-mode .mc-day.mc-hasevent{color:#0d1526;}
 .sp-circ-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .sp-pct{font-size:1.1rem;font-weight:800;font-family:var(--mono);color:var(--text);}
 .sp-pct-lbl{font-size:0.5rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-family:var(--mono);}
-.sp-summary{display:flex;flex-direction:column;gap:0.4rem;}
+.sp-summary{display:flex;flex-direction:column;gap:0.55rem;padding-left:0.5rem;}
 .sp-sum-row{display:flex;align-items:center;gap:0.4rem;}
 .sp-sum-ico{width:8px;height:8px;border-radius:3px;border:1px solid;}
 .sp-bars{display:flex;flex-direction:column;gap:0.65rem;border-top:1px solid var(--border);padding-top:0.8rem;}
@@ -843,7 +855,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
       <span id="gdrive-label">Connect Google Drive</span>
     </button>
     <div id="gdrive-status" onclick="copyShareUrl()" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;cursor:pointer;"></div>
-    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;font-size:0.6rem;padding:0.25rem 0.5rem;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:6px;color:var(--accent2);cursor:pointer;font-family:var(--mono);">🔄 Force Sync to Friends</button>
+    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;" class="set-btn">🔄 Sync to Friends</button>
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
       👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
       <div id="last-updated-display" style="font-size:0.58rem;color:var(--text3);margin-top:0.2rem;font-family:var(--mono);"></div>
@@ -863,15 +875,17 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
   <!-- Dashboard Top Bar -->
   <div class="dash-topbar">
     <div class="dash-topbar-l">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div>
         <h2 class="dash-greeting" id="dash-greet">Hello, AraFath 👋</h2>
         <p class="dash-subdate" id="dash-date"></p>
       </div>
     </div>
     <div class="dash-topbar-r">
-      <button class="export-pdf-btn" onclick="exportToPDF()" title="Export">📄 PDF</button>
-      <button class="btn btn-ghost btn-sm" onclick="openTeacherAdd()">+ Teacher</button>
+      <div class="dash-btn-group">
+        <button class="export-pdf-btn" onclick="exportToPDF()" title="Export PDF">📄 PDF</button>
+        <button class="export-pdf-btn" onclick="openTeacherAdd()">👤 Teacher</button>
+      </div>
       <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
     </div>
   </div>
@@ -916,7 +930,11 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
       <div class="mini-cal-card">
         <div class="mini-cal-hdr">
           <span class="mini-cal-title">Calendar</span>
-          <button class="ptcard-link" onclick="go('calendar')">View All ›</button>
+          <div style="display:flex;align-items:center;gap:0.4rem;margin-left:auto;">
+            <button onclick="calNav(-1)" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text2);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;">‹</button>
+            <button onclick="calNav(1)" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text2);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;">›</button>
+            <button class="ptcard-link" onclick="go('calendar')">View All ›</button>
+          </div>
         </div>
         <div id="mini-cal-body" class="mini-cal-body"></div>
         <div class="mini-cal-legend" id="mini-cal-legend">
@@ -955,7 +973,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-calendar">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>Calendar</h2><p>3-month view · Friday & Saturday classes highlighted</p></div>
     </div>
     <div class="topbar-r">
@@ -978,7 +996,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-schedule">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>Class Schedule</h2><p>Effective from 16 January 2026</p></div>
     </div>
   </div>
@@ -1008,7 +1026,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-events">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>All Events</h2><p>Your complete academic schedule</p></div>
     </div>
     <div class="topbar-r">
@@ -1038,7 +1056,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-courses">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>Courses</h2><p>Notes, progress and events per course</p></div>
     </div>
     <button class="btn btn-primary btn-sm" onclick="openAddEvent()">+ Add Event</button>
@@ -1050,7 +1068,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-teachers">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>Teachers</h2><p>Click a teacher to view full profile</p></div>
     </div>
     <button class="btn btn-primary btn-sm" onclick="openTeacherAdd()">+ Add Teacher</button>
@@ -1062,7 +1080,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-studyfiles">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>Study Files</h2><p>Upload, organise and share course materials with your batch</p></div>
     </div>
     <div class="topbar-r" id="sf-owner-actions">
@@ -1100,7 +1118,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 <div class="page" id="page-students">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰</button>
+      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
       <div class="topbar-l"><h2>Students</h2><p>MDPS 26 Batch · Student Directory</p></div>
     </div>
   </div>
@@ -1361,7 +1379,7 @@ function updateGreeting() {
   }
   if(dateEl) {
     const datePart = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
     dateEl.innerHTML = `${datePart} &nbsp;·&nbsp; <span style="font-family:var(--mono);color:var(--blue2)">${timePart}</span>`;
   }
 }
@@ -1531,13 +1549,7 @@ function renderTaskList() {
     const dueColor = d<=2?'var(--red)':d<=7?'var(--amber)':'var(--text2)';
     return `<div class="dt-row" onclick="openEditEvent(${e.id})">
       <span class="dt-dot" style="background:${dotColor}"></span>
-      <div class="dt-main">
-        <span class="dt-name">${e.title}</span>
-        <div class="dt-meta">
-          <span class="dt-badge ${e.type}">${TL[e.type]||e.type}</span>
-          ${e.teacher?`<span class="dt-teacher">· 👤 ${e.teacher}</span>`:''}
-        </div>
-      </div>
+      <span class="dt-name">${e.title}</span>
       <span class="dt-due" style="color:${dueColor}">${fmtS(e.date)}</span>
       <span class="dt-check" onclick="event.stopPropagation();toggleDone(${e.id})" title="Mark done">✓</span>
     </div>`;
@@ -1618,7 +1630,7 @@ function renderNDCard() {
     <div class="nd-inner">
       <div class="nd-info">
         <div class="nd-title">${next.title}</div>
-        <div class="nd-course" onclick="go('courses')">Due ${fmtD(next.date)} ›</div>
+        <div class="nd-course" onclick="go('courses')" style="display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--blue2);cursor:pointer;margin-top:0.25rem;font-weight:500;">📅 Due ${fmtD(next.date)}</div>
         <div class="nd-btns">
           <button class="nd-btn" onclick="openDetail(${next.id})">View Assignment</button>
           <button class="nd-btn" onclick="go('courses')">Open Course</button>
@@ -1627,46 +1639,42 @@ function renderNDCard() {
       <div class="nd-counter">
         <div class="nd-num" style="color:${daysColor}">${d}</div>
         <div class="nd-unit" style="color:${labelColor}">days left</div>
-        <div class="nd-unit2">Day: left</div>
       </div>
     </div>`;
 }
+
+let calMonthOffset = 0;
+function calNav(dir) { calMonthOffset += dir; renderMiniCal(); }
 
 function renderMiniCal() {
   const el = document.getElementById('mini-cal-body');
   if(!el) return;
   const now = new Date();
-  // Show current month + next month
-  const months = [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth()+1, 1)];
+  const base = new Date(now.getFullYear(), now.getMonth() + calMonthOffset, 1);
+  const yr = base.getFullYear(), mo = base.getMonth();
+  const mName = base.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const firstDay = new Date(yr,mo,1).getDay();
+  const daysInMonth = new Date(yr,mo+1,0).getDate();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const evDates = {};
   DB.events.forEach(e=>{ if(e.date) { evDates[e.date] = evDates[e.date]||[]; evDates[e.date].push(e); } });
-
-  el.innerHTML = months.map(m=>{
-    const yr = m.getFullYear(), mo = m.getMonth();
-    const mName = m.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-    const firstDay = new Date(yr,mo,1).getDay();
-    const daysInMonth = new Date(yr,mo+1,0).getDate();
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    let cells = '';
-    for(let i=0;i<firstDay;i++) cells += `<div class="mc-day mc-empty"></div>`;
-    for(let d=1;d<=daysInMonth;d++){
-      const ds = `${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isToday = ds === now.toISOString().slice(0,10);
-      const evs = evDates[ds]||[];
-      const dotColor = evs.length>0 ? (TC[evs[0].type]||'var(--blue)') : null;
-      cells += `<div class="mc-day${isToday?' mc-today':''}${evs.length?' mc-hasevent':''}" title="${evs.map(e=>e.title).join(', ')}" onclick="${evs.length?`openEditEvent(${evs[0].id})`:''}">
-        ${d}
-        ${dotColor?`<span class="mc-evdot" style="background:${dotColor}"></span>`:''}
-      </div>`;
-    }
-    return `<div class="mc-month">
-      <div class="mc-month-hdr">
-        <span class="mc-month-name">${mName}</span>
-      </div>
-      <div class="mc-days-hdr">${days.map(d=>`<div class="mc-daylabel">${d}</div>`).join('')}</div>
-      <div class="mc-grid">${cells}</div>
+  let cells = '';
+  for(let i=0;i<firstDay;i++) cells += `<div class="mc-day mc-empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds = `${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = ds === now.toISOString().slice(0,10);
+    const evs = evDates[ds]||[];
+    const dotColor = evs.length>0 ? (TC[evs[0].type]||'var(--blue)') : null;
+    cells += `<div class="mc-day${isToday?' mc-today':''}${evs.length?' mc-hasevent':''}" title="${evs.map(e=>e.title).join(', ')}" onclick="${evs.length?`openEditEvent(${evs[0].id})`:''}">
+      ${d}
+      ${dotColor?`<span class="mc-evdot" style="background:${dotColor}"></span>`:''}
     </div>`;
-  }).join('');
+  }
+  el.innerHTML = `<div class="mc-month">
+    <div class="mc-month-hdr"><span class="mc-month-name">${mName}</span></div>
+    <div class="mc-days-hdr">${days.map(d=>`<div class="mc-daylabel">${d}</div>`).join('')}</div>
+    <div class="mc-grid">${cells}</div>
+  </div>`;
 }
 
 function renderSemProg() {
@@ -2296,7 +2304,7 @@ function signOutDrive() {
 }
 function setDriveStatus(s) {
   const el=document.getElementById('gdrive-status');if(el)el.textContent=s;
-  if(gDriveUser){document.getElementById('gdrive-label').textContent='Drive Connected';document.getElementById('gdrive-icon').textContent='✅';}
+  if(gDriveUser){document.getElementById('gdrive-label').textContent='Drive Connected';document.getElementById('gdrive-icon').textContent='🔗';}
 }
 
 async function saveToDrive() {
@@ -2521,40 +2529,6 @@ function fmtSize(b) {
   return (b/1048576).toFixed(1)+' MB';
 }
 
-// ── Upload large file to Google Drive as a publicly accessible file ──
-async function sfUploadFileToDrive(fileName, base64Data, mimeType) {
-  if(!gDriveUser) return null;
-  try {
-    const base64 = base64Data.split(',')[1];
-    const byteChars = atob(base64);
-    const byteArr = new Uint8Array(byteChars.length);
-    for(let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
-    const blob = new Blob([byteArr], { type: mimeType || 'application/octet-stream' });
-    const meta = JSON.stringify({ name: fileName, parents: ['root'] });
-    const token = gapi.client.getToken();
-    const formData = new FormData();
-    formData.append('metadata', new Blob([meta], { type: 'application/json' }));
-    formData.append('file', blob, fileName);
-    const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token.access_token },
-      body: formData
-    });
-    if(!uploadRes.ok) throw new Error('Upload failed: ' + uploadRes.status);
-    const uploadJson = await uploadRes.json();
-    const fileId = uploadJson.id;
-    await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token.access_token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: 'reader', type: 'anyone' })
-    });
-    return 'https://drive.google.com/uc?export=download&id=' + fileId;
-  } catch(e) {
-    console.warn('Drive file upload failed:', e);
-    return null;
-  }
-}
-
 // ── Upload files ──
 function sfAddFiles(input) {
   if(document.body.classList.contains('view-only')) return;
@@ -2564,21 +2538,14 @@ function sfAddFiles(input) {
   const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   let saved = 0; const total = files.length;
   sfShowProgress(0, total, 'Uploading');
-  const INLINE_LIMIT = 512000;
   files.forEach(file => {
     const ext = (file.name.split('.').pop()||'').toLowerCase();
     const id = sfNextId();
     const reader = new FileReader();
-    reader.onload = async ev => {
+    reader.onload = ev => {
       const data = ev.target.result;
-      const mimeType = file.type || 'application/octet-stream';
-      let driveUrl = null;
-      if(file.size >= INLINE_LIMIT && gDriveUser) {
-        sfShowProgress(saved, total, 'Uploading to Drive: ' + file.name);
-        driveUrl = await sfUploadFileToDrive(file.name, data, mimeType);
-      }
       sfSaveToIDB(id, data).then(() => {
-        DB.studyFiles.push({ id, type:'file', name:file.name, ext, size:file.size, folder:sfCurrentFolder, date, data: file.size<INLINE_LIMIT ? data : null, driveUrl: driveUrl||null });
+        DB.studyFiles.push({ id, type:'file', name:file.name, ext, size:file.size, folder:sfCurrentFolder, date, data: file.size<512000 ? data : null });
         saved++;
         sfShowProgress(saved, total, 'Uploading');
         if(saved === total) { persist(); renderSF(); alert('✅ '+total+' file'+(total>1?'s':'')+' uploaded!'); }
@@ -2624,15 +2591,10 @@ function sfAddFolder(input) {
     const ext = (fname.split('.').pop()||'').toLowerCase();
     const id = sfNextId();
     const reader = new FileReader();
-    reader.onload = async ev => {
+    reader.onload = ev => {
       const data = ev.target.result;
-      let driveUrl = null;
-      if(file.size >= 512000 && gDriveUser) {
-        sfShowProgress(saved, total, 'Uploading to Drive: ' + fname);
-        driveUrl = await sfUploadFileToDrive(fname, data, file.type||'application/octet-stream');
-      }
       sfSaveToIDB(id, data).then(() => {
-        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null, driveUrl: driveUrl||null });
+        DB.studyFiles.push({ id, type:'file', name:fname, ext, size:file.size, folder:parentId, date, data: file.size<512000 ? data : null });
         saved++;
         sfShowProgress(saved, total, 'Uploading folder');
         if(saved === total) { persist(); renderSF(); alert('✅ Folder uploaded: '+total+' file'+(total>1?'s':'')); }
@@ -2691,11 +2653,7 @@ function sfDownload(id) {
   if(!meta||meta.type==='folder') return;
   sfGetFromIDB(id).then(data => {
     const src = data || meta.data;
-    if(!src) {
-      if(meta.driveUrl) { window.open(meta.driveUrl, '_blank'); }
-      else { alert('File not available.\n\nConnect Google Drive and re-upload this file to enable sharing of large files.'); }
-      return;
-    }
+    if(!src) { alert('File not available.\n\nThis file is larger than 500KB and was not embedded in the shared link. The owner needs to re-upload it to make it downloadable for friends.'); return; }
     const a = document.createElement('a');
     a.href = src; a.download = (meta.name||'file').split('/').pop();
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -2785,7 +2743,7 @@ function renderSF() {
     const ic=SF_ICON_CLASS[ext]||'other';
     const icon=SF_ICONS[ext]||'📄';
     const dispName=(item.name||'').split('/').pop();
-    const canDl=!isVO||item.data||item.driveUrl;
+    const canDl=!isVO||item.data;
     return `<div class="sf-card" title="${dispName}">
       <div class="sf-icon ${ic}">${icon}</div>
       <div class="sf-name">${dispName}</div>
