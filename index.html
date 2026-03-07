@@ -647,8 +647,8 @@ body.view-only .export-pdf-btn{display:none!important;}
 .dash-topbar{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 1.8rem 0.8rem;flex-wrap:wrap;gap:0.8rem;border-bottom:1px solid var(--border);}
 .dash-topbar-l{display:flex;align-items:center;gap:0.8rem;}
 .dash-topbar-r{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;}
-.dash-greeting{font-size:1.6rem;font-weight:700;letter-spacing:-0.03em;color:var(--text);line-height:1.2;}
-.dash-subdate{font-size:0.68rem;color:var(--text3);margin-top:0.25rem;font-family:var(--mono);}
+.dash-greeting{font-size:2.4rem;font-weight:800;letter-spacing:-0.04em;color:var(--text);line-height:1.15;}
+.dash-subdate{font-size:0.88rem;color:var(--text2);margin-top:0.35rem;font-family:var(--mono);letter-spacing:0.01em;}
 .dash-addtask-btn{display:inline-flex;align-items:center;gap:0.3rem;padding:0.42rem 1.1rem;border-radius:var(--rsm);background:linear-gradient(135deg,var(--blue),var(--accent));color:#fff;border:none;font-family:var(--font);font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 12px var(--glow-blue);transition:all 0.15s;}
 .dash-addtask-btn:hover{filter:brightness(1.12);transform:translateY(-1px);}
 body.view-only .dash-addtask-btn{display:none!important;}
@@ -1042,7 +1042,193 @@ body.light-mode .sp-bars{border-top-color:rgba(60,80,140,0.1);}
     <button class="btn btn-ghost btn-sm" onclick="exportStudentsCSV()">⬇️ Export</button>
   </div>
   <div id="student-list"></div>
+
+  <!-- PHOTO GALLERY SECTION -->
+  <div style="margin-top:2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;box-shadow:var(--sh);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <span style="font-size:1.3rem;">📸</span>
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text)">Group Gallery</div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-top:0.1rem;">Upload and view batch group photos</div>
+        </div>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.42rem 1rem;border-radius:var(--rsm);background:linear-gradient(135deg,var(--blue),var(--accent));color:#fff;border:none;font-family:var(--font);font-size:0.76rem;font-weight:700;cursor:pointer;box-shadow:0 2px 12px var(--glow-blue);">
+        ＋ Add Photos
+        <input type="file" accept="image/*" multiple style="display:none" onchange="addGalleryPhotos(this)">
+      </label>
+    </div>
+    <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;">
+      <div style="grid-column:1/-1;text-align:center;padding:2rem 1rem;color:var(--text3);font-size:0.8rem;opacity:0.6;" id="gallery-empty">
+        🖼️ No photos yet — upload group photos above
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDY FILES SECTION -->
+  <div style="margin-top:1.2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;box-shadow:var(--sh);margin-bottom:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <span style="font-size:1.3rem;">📁</span>
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text)">Study Files</div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-top:0.1rem;">PDFs, slides, notes and other study materials</div>
+        </div>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.42rem 1rem;border-radius:var(--rsm);background:linear-gradient(135deg,var(--green),var(--class));color:#fff;border:none;font-family:var(--font);font-size:0.76rem;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(52,211,153,0.3);">
+        ＋ Upload Files
+        <input type="file" accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.zip" multiple style="display:none" onchange="addStudyFiles(this)">
+      </label>
+    </div>
+    <div id="study-files-list">
+      <div style="text-align:center;padding:2rem 1rem;color:var(--text3);font-size:0.8rem;opacity:0.6;" id="files-empty">
+        📄 No study files yet — upload PDFs, slides, or notes above
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+// ── GALLERY ──
+let galleryPhotos = JSON.parse(localStorage.getItem('mdps-gallery') || '[]');
+
+function addGalleryPhotos(input) {
+  const files = Array.from(input.files);
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      galleryPhotos.push({ name: file.name, src: e.target.result, date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) });
+      loaded++;
+      if(loaded === files.length) {
+        localStorage.setItem('mdps-gallery', JSON.stringify(galleryPhotos));
+        renderGallery();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function deleteGalleryPhoto(idx) {
+  galleryPhotos.splice(idx, 1);
+  localStorage.setItem('mdps-gallery', JSON.stringify(galleryPhotos));
+  renderGallery();
+}
+
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  const empty = document.getElementById('gallery-empty');
+  if(!grid) return;
+  if(galleryPhotos.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 1rem;color:var(--text3);font-size:0.8rem;opacity:0.6;" id="gallery-empty">🖼️ No photos yet — upload group photos above</div>';
+    return;
+  }
+  grid.innerHTML = galleryPhotos.map((p,i) => `
+    <div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);aspect-ratio:1;cursor:pointer;" onclick="openLightbox(${i})" title="${p.name}">
+      <img src="${p.src}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:0.4rem 0.5rem;">
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-size:0.55rem;color:rgba(255,255,255,0.5);">${p.date}</div>
+      </div>
+      <button onclick="event.stopPropagation();deleteGalleryPhoto(${i})" style="position:absolute;top:0.35rem;right:0.35rem;background:rgba(0,0,0,0.55);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.15s;" class="del-btn">✕</button>
+    </div>`).join('');
+  // Show delete button on hover
+  grid.querySelectorAll('[style*="position:relative"]').forEach(card => {
+    const btn = card.querySelector('.del-btn');
+    card.addEventListener('mouseenter', () => { if(btn) btn.style.opacity='1'; });
+    card.addEventListener('mouseleave', () => { if(btn) btn.style.opacity='0'; });
+  });
+}
+
+function openLightbox(idx) {
+  const p = galleryPhotos[idx];
+  const lb = document.createElement('div');
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);';
+  lb.innerHTML = `<div style="position:relative;max-width:90vw;max-height:90vh;text-align:center;">
+    <img src="${p.src}" style="max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.8);">
+    <div style="margin-top:0.6rem;font-size:0.78rem;color:rgba(255,255,255,0.7);">${p.name}</div>
+    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:-0.8rem;right:-0.8rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+  </div>`;
+  lb.addEventListener('click', e => { if(e.target === lb) lb.remove(); });
+  document.body.appendChild(lb);
+}
+
+renderGallery();
+
+// ── STUDY FILES ──
+let studyFiles = JSON.parse(localStorage.getItem('mdps-study-files') || '[]');
+
+const FILE_ICONS = { pdf:'📕', ppt:'📊', pptx:'📊', doc:'📝', docx:'📝', xls:'📗', xlsx:'📗', txt:'📄', zip:'🗜️', png:'🖼️', jpg:'🖼️', jpeg:'🖼️' };
+
+function addStudyFiles(input) {
+  const files = Array.from(input.files);
+  let loaded = 0;
+  files.forEach(file => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const isImg = ['png','jpg','jpeg'].includes(ext);
+    const reader = new FileReader();
+    reader.onload = e => {
+      studyFiles.push({
+        name: file.name, size: file.size, ext,
+        src: isImg ? e.target.result : null,
+        data: e.target.result,
+        date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+      });
+      loaded++;
+      if(loaded === files.length) {
+        localStorage.setItem('mdps-study-files', JSON.stringify(studyFiles));
+        renderStudyFiles();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function deleteStudyFile(idx) {
+  studyFiles.splice(idx, 1);
+  localStorage.setItem('mdps-study-files', JSON.stringify(studyFiles));
+  renderStudyFiles();
+}
+
+function downloadStudyFile(idx) {
+  const f = studyFiles[idx];
+  const a = document.createElement('a');
+  a.href = f.data;
+  a.download = f.name;
+  a.click();
+}
+
+function fmtSize(bytes) {
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function renderStudyFiles() {
+  const list = document.getElementById('study-files-list');
+  if(!list) return;
+  if(studyFiles.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem 1rem;color:var(--text3);font-size:0.8rem;opacity:0.6;" id="files-empty">📄 No study files yet — upload PDFs, slides, or notes above</div>';
+    return;
+  }
+  list.innerHTML = studyFiles.map((f,i) => `
+    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.8rem;border-radius:10px;background:var(--bg2);border:1px solid var(--border);margin-bottom:0.5rem;transition:all 0.15s;" onmouseenter="this.style.borderColor='rgba(79,124,255,0.3)'" onmouseleave="this.style.borderColor='var(--border)'">
+      <div style="font-size:1.5rem;flex-shrink:0;">${FILE_ICONS[f.ext] || '📄'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
+        <div style="font-size:0.63rem;color:var(--text3);margin-top:0.1rem;">${f.ext.toUpperCase()} · ${fmtSize(f.size)} · ${f.date}</div>
+      </div>
+      <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+        <button onclick="downloadStudyFile(${i})" title="Download" style="background:rgba(79,124,255,0.12);border:1px solid rgba(79,124,255,0.25);color:var(--blue2);border-radius:7px;padding:0.3rem 0.6rem;font-size:0.7rem;cursor:pointer;transition:all 0.15s;">⬇️</button>
+        <button onclick="deleteStudyFile(${i})" title="Delete" style="background:rgba(255,94,108,0.1);border:1px solid rgba(255,94,108,0.2);color:var(--ct);border-radius:7px;padding:0.3rem 0.6rem;font-size:0.7rem;cursor:pointer;transition:all 0.15s;">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+renderStudyFiles();
+</script>
 
 </main>
 </div>
@@ -1278,17 +1464,16 @@ function closeSb() {
 function updateGreeting() {
   const now = new Date();
   const h = now.getHours();
-  const word = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const word = h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
   const greetEl = document.getElementById('dash-greet');
   const dateEl = document.getElementById('dash-date');
   if(greetEl) {
-    const name = (DB && DB.settings && DB.settings.name) || 'AraFath';
-    greetEl.innerHTML = `<span style="font-weight:400">Hello,</span> ${name} 👋`;
+    greetEl.innerHTML = word;
   }
   if(dateEl) {
     const datePart = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    dateEl.innerHTML = `${word} &nbsp;·&nbsp; ${datePart} &nbsp;·&nbsp; <span style="font-family:var(--mono);color:var(--blue2)">${timePart}</span>`;
+    dateEl.innerHTML = `${datePart} &nbsp;·&nbsp; <span style="font-family:var(--mono);color:var(--blue2)">${timePart}</span>`;
   }
 }
 updateGreeting();
