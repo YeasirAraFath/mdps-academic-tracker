@@ -23,7 +23,7 @@
   --sb-w:248px; --header-h:68px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{font-size:16px;scroll-behavior:smooth;}
+html{font-size:17px;scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(79,124,255,0.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(34,211,153,0.07) 0%,transparent 50%),radial-gradient(ellipse 50% 60% at 60% 30%,rgba(129,140,248,0.06) 0%,transparent 50%);pointer-events:none;z-index:0;}
@@ -105,7 +105,7 @@ body.owner-mode .owner-badge{display:flex;}
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
-@media(max-width:820px){.sidebar{position:fixed;left:-248px;z-index:100;height:100%;}.sidebar.open{transform:translateX(248px);}.main{max-width:100vw;}}
+@media(max-width:820px){.main{max-width:100vw;}}
 
 /* HEADER */
 .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:1.5rem 2rem 0;margin-bottom:1.4rem;}
@@ -445,12 +445,24 @@ select.finput{cursor:pointer;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 
 /* MOBILE */
-.sb-toggle-btn{display:none;position:fixed;bottom:1.2rem;right:1.2rem;z-index:150;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));border:none;color:#fff;font-size:1.1rem;cursor:pointer;box-shadow:0 4px 16px var(--glow-blue);align-items:center;justify-content:center;}
-@media(max-width:820px){.sb-toggle-btn{display:flex;}}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+.sb-overlay.show{display:block;}
+.sb-toggle-btn{display:none;position:fixed;bottom:1.4rem;right:1.4rem;z-index:150;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));border:none;color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px var(--glow-blue);align-items:center;justify-content:center;}
+@media(max-width:820px){
+  .sb-toggle-btn{display:flex;}
+  .sidebar{position:fixed;left:0;top:0;z-index:100;height:100%;transform:translateX(-110%);transition:transform 0.3s ease;}
+  .sidebar.open{transform:translateX(0);}
+  .main{max-width:100vw;}
+}
 </style>
 </head>
 <body>
 <div class="app">
+
+<!-- Mobile sidebar overlay -->
+<div class="sb-overlay" id="sb-overlay" onclick="closeSb()"></div>
+<!-- Mobile toggle button -->
+<button class="sb-toggle-btn" id="sb-toggle" onclick="toggleSb()">☰</button>
 
 <aside class="sidebar" id="sidebar">
   <div class="sb-logo">
@@ -472,9 +484,9 @@ select.finput{cursor:pointer;}
     </div>
   </div>
   <div class="profile-pill" onclick="openSettings()">
-    <div class="pp-av" id="sb-av-wrap"><span id="sb-av-init">YA</span></div>
+    <div class="pp-av" id="sb-av-wrap"><span id="sb-av-init">AF</span></div>
     <div class="pp-info">
-      <div class="pp-name" id="sb-name">Yeasir AraFath</div>
+      <div class="pp-name" id="sb-name">AraFath</div>
       <div class="pp-id" id="sb-id">MDPS - 261510</div>
     </div>
     <div class="pp-dot"></div>
@@ -502,7 +514,7 @@ select.finput{cursor:pointer;}
     </button>
     <div id="gdrive-status" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;"></div>
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
-      👁 Viewing <strong id="owner-name-display">Yeasir</strong>'s tracker
+      👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
     </div>
     <button class="set-btn" onclick="openSettings()">⚙️ &nbsp;Settings & Profile</button>
   </div>
@@ -871,22 +883,22 @@ select.finput{cursor:pointer;}
 const SK = 'mdps-tracker-v3';
 let DB = {
   events: [], teachers: [], courseNotes: {},
-  settings: { name:'Yeasir AraFath', id:'MDPS - 261510', program:'MDPS 26 · 1st Year, 1st Term', photo:'', theme:'dark', publicFileId:'' }
+  settings: { name:'AraFath', id:'MDPS - 261510', program:'MDPS 26 · 1st Year, 1st Term', photo:'', theme:'dark', publicFileId:'' }
 };
 
 const SEED = {
   events: [
-    {id:1,type:'ct',title:'CT 1 – Development Theories and Policies',date:'2026-03-07',course:'Development Theories and Policies',teacher:'Faijan Bin Halim',semester:1,notes:'',done:false},
-    {id:2,type:'assignment',title:'Assignment 2 – Poverty Alleviation Strategies',date:'2026-03-14',course:'Principles of Economics',teacher:'Dr. Nishad Nasrin',semester:1,notes:'',done:false},
-    {id:3,type:'assignment',title:'Assignment 1 – Land Reform Policy Analysis',date:'2026-03-21',course:'Agricultural Policy and Rural Development',teacher:'Tasnim Murad Mamun',semester:1,notes:'',done:true},
-    {id:4,type:'presentation',title:'Group Presentation – Gender & Development',date:'2026-04-04',course:'Population Policy and Gender Studies',teacher:'Kaniz Fatima Mohsin',semester:1,notes:'',done:false},
-    {id:5,type:'ct',title:'CT 1 – Agricultural Policy',date:'2026-04-11',course:'Agricultural Policy and Rural Development',teacher:'Tasnim Murad Mamun',semester:1,notes:'',done:false},
-    {id:6,type:'assignment',title:'Assignment 2 – Rural Credit Systems',date:'2026-04-18',course:'Agricultural Policy and Rural Development',teacher:'Md. Torikul Islam',semester:1,notes:'',done:false},
-    {id:7,type:'ct',title:'CT 1 – Population Policy',date:'2026-04-25',course:'Population Policy and Gender Studies',teacher:'Md. Mehedi Hasan',semester:1,notes:'',done:false},
+    {id:1001,type:'assignment',title:'Land Reform Policy',date:'2026-03-28',course:'Agricultural Policy and Rural Development',teacher:'Tasnim Murad Mamun',semester:1,notes:'Topic: Land Reform Policy\nSubmit by 28 March 2026\nCover historical and contemporary perspectives.\nInclude policy implications and rural development impact.',done:false,links:[]},
+    {id:1002,type:'ct',title:'Population Policy Quiz',date:'2026-04-03',course:'Population Policy and Gender Studies',teacher:'Kaniz Fatima Mohsin',semester:1,notes:'Type: Quiz — Section A\nDate: 3rd or 4th April 2026\nQuiz conducted from 2 PDF/slide files.\nReview both linked slide files thoroughly.',done:false,links:[{label:'Quiz Slides 1',url:'https://docs.google.com/presentation/d/17xMN0l0fJBl5aGx-fRIQ0BbcSNsZky1m/edit?usp=drivesdk'},{label:'Quiz Slides 2',url:'https://docs.google.com/presentation/d/1JaSi91dPw2LRRKbqPLn8PS3PBhY7drXU/edit?usp=drivesdk'}]},
+    {id:1003,type:'assignment',title:'Development Theories & Policy',date:'2026-03-28',course:'Development Theories and Policies',teacher:'Faijan Bin Halim',semester:1,notes:'Type: Assignment (CT-1)\nSubmit by 28 March 2026\nCover major development theories.\nRelate theories to current policy frameworks.',done:false,links:[]},
+    {id:2001,type:'ct',title:'Demand and Supply',date:'2026-04-03',course:'Principles of Economics',teacher:'Dr. Nishad Nasrin',semester:1,notes:'Written Class Test\n\nStudy topics:\n• Law of Demand\n• Law of Supply\n• Demand Curve\n• Supply Curve\n• Market Equilibrium\n\nPractice short answers and diagrams.',done:false,links:[]},
+    {id:2002,type:'ct',title:'Production and Utility',date:'2026-04-10',course:'Principles of Economics',teacher:'Dr. Nishad Nasrin',semester:1,notes:'Written Class Test\n\nStudy topics:\n• Production Function\n• Law of Diminishing Returns\n• Total Product / Marginal Product\n• Utility & Marginal Utility\n• Law of Diminishing Marginal Utility',done:false,links:[]},
+    {id:2003,type:'presentation',title:'Presentation — Section B',date:'2026-04-17',course:'Principles of Economics',teacher:'Dr. Nishad Nasrin',semester:1,notes:'Slide Presentation · 10 minutes\n\nSlide Structure (6–8 slides):\n1. Title + Your name + Course name\n2. Introduction\n3. Background\n4. Economic impact\n5. Data / Examples\n6. Conclusion\n7. References (optional)\n\nExample topic: Iran–U.S. war and its effect on the economy.\nExplain in your own words. Keep slides clean.',done:false,links:[]},
+    {id:3001,type:'assignment',title:'Evolution of Economics & Economic Systems',date:'2026-03-20',course:'Principles of Economics',teacher:'Dr. Nishad Nasrin',semester:1,notes:'ASSIGNMENT NO: 01\n\n1. Critical Examination of the Evolution of Definitions of Economics\n2. Preferred Economic System and Its Applicability to Bangladesh\n\nCourse Title: Principles of Economics\nCourse Code: 0311 15 Econ 5121',done:true,links:[]},
   ],
   teachers: [
-    {id:1,name:"Tasnim Murad Mamun",dept:"Agricultural Economics",email:"",phone:"",office:"",hours:"",notes:"Course: Agricultural Policy and Rural Development (AT 5179)",color:"#2d7a4f"},
-    {id:2,name:"Kaniz Fatima Mohsin",dept:"Population Studies",email:"",phone:"",office:"",hours:"",notes:"Course: Population Policy and Gender Studies (Demo 5177)",color:"#7c3d8a"},
+    {id:1,name:"Tasnim Murad Mamun",dept:"Agricultural Economics",email:"",phone:"",office:"",hours:"",notes:"Course: Agricultural Policy and Rural Development (AT 5179)\nAlso known as: Murad Mamun",color:"#0d7a56"},
+    {id:2,name:"Kaniz Fatima Mohsin",dept:"Population & Gender Studies",email:"",phone:"",office:"",hours:"",notes:"Course: Population Policy and Gender Studies (Demo 5177)\nCo-teacher: Md. Mehedi Hasan",color:"#b3186a"},
     {id:3,name:"Faijan Bin Halim",dept:"Development Studies",email:"",phone:"",office:"",hours:"",notes:"Course: Development Theories and Policies (DS 5171)",color:"#0a7ab8"},
     {id:4,name:"Dr. Nishad Nasrin",dept:"Economics",email:"",phone:"",office:"",hours:"",notes:"Course: Principles of Economics (Econ 5121)\nComprehensive Viva Voce – I (Econ 5130)",color:"#5c4fd6"},
     {id:5,name:"Md. Torikul Islam",dept:"Agricultural Economics",email:"",phone:"",office:"",hours:"",notes:"Co-teacher: Agricultural Policy and Rural Development (AT 5179)",color:"#4a7c3f"},
@@ -903,7 +915,7 @@ function load() {
   if(s){
     try {
       DB = JSON.parse(s);
-      if(!DB.settings.name)  DB.settings.name  = 'Yeasir AraFath';
+      if(!DB.settings.name)  DB.settings.name  = 'AraFath';
       if(!DB.settings.id)    DB.settings.id    = 'MDPS - 261510';
     } catch(e) { _seedDB(); }
   } else { _seedDB(); }
@@ -960,7 +972,7 @@ function go(page, filter) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg = document.getElementById('page-'+page);
   if(pg) pg.classList.add('active');
-  document.getElementById('sidebar').classList.remove('open');
+  closeSb();
   if(page==='dashboard') renderDash();
   if(page==='events'){ if(filter) { curFilter=filter; applyChip(filter); } renderEvents(); }
   if(page==='calendar') renderCal();
@@ -969,14 +981,21 @@ function go(page, filter) {
   if(page==='students') renderStudents();
 }
 
-function toggleSb() { document.getElementById('sidebar').classList.toggle('open'); }
-document.addEventListener('click', e => {
+function toggleSb() {
   const sb = document.getElementById('sidebar');
-  const tog = document.querySelector('.sb-toggle-btn');
-  if(sb.classList.contains('open') && !sb.contains(e.target) && tog && !tog.contains(e.target)){
-    sb.classList.remove('open');
-  }
-});
+  const ov = document.getElementById('sb-overlay');
+  const btn = document.getElementById('sb-toggle');
+  const isOpen = sb.classList.toggle('open');
+  ov.classList.toggle('show', isOpen);
+  if(btn) btn.textContent = isOpen ? '✕' : '☰';
+}
+function closeSb() {
+  document.getElementById('sidebar').classList.remove('open');
+  const ov = document.getElementById('sb-overlay');
+  if(ov) ov.classList.remove('show');
+  const btn = document.getElementById('sb-toggle');
+  if(btn) btn.textContent = '☰';
+}
 
 // GREETING + LIVE CLOCK
 function updateGreeting() {
@@ -986,7 +1005,7 @@ function updateGreeting() {
   const word = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const greetEl = document.getElementById('dash-greet');
   const dateEl = document.getElementById('dash-date');
-  if(greetEl) greetEl.innerHTML = `${word}, ${emoji} <span style="color:var(--blue2)">Yeasir</span> 👋`;
+  if(greetEl) greetEl.innerHTML = `${word}, ${emoji} <span style="color:var(--blue2)">AraFath</span> 👋`;
   if(dateEl) {
     const datePart = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
