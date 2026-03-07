@@ -1009,6 +1009,7 @@ function saveGrade(id){const e=DB.events.find(x=>x.id===id);if(!e)return;e.grade
 
 // ══ ADD/EDIT ══
 function openAddEvent(){
+  if(document.body.classList.contains('view-only')){alert('👁 View only — connect Google Drive to edit');return;}
   document.getElementById('ev-mt').textContent='Add Event';
   document.getElementById('f-eid').value='';
   document.getElementById('f-title').value='';
@@ -1046,6 +1047,7 @@ function addLR(lbl='',url=''){const id=Date.now()+Math.random();lrIds.push(id);c
 function rmLR(id){lrIds=lrIds.filter(r=>r!==id);document.getElementById('lr-'+id)?.remove();}
 function getLinks(){return lrIds.map(id=>({label:(document.getElementById('ll-'+id)?.value||'').trim()||'Link',url:(document.getElementById('lu-'+id)?.value||'').trim()})).filter(l=>l.url);}
 function saveEv(){
+  if(document.body.classList.contains('view-only')){alert('👁 View only — connect Google Drive to edit');return;}
   const title=document.getElementById('f-title').value.trim(),date=document.getElementById('f-date').value;
   if(!title||!date){document.getElementById('f-title').classList.add('err');setTimeout(()=>document.getElementById('f-title').classList.remove('err'),1500);return;}
   const eid=document.getElementById('f-eid').value;
@@ -1159,7 +1161,8 @@ function openTV(id){
 function openTeacherAdd(){document.getElementById('ta-mt').textContent='Add Teacher';document.getElementById('t-eid').value='';['t-name','t-dept','t-email','t-phone','t-office','t-hours','t-notes'].forEach(i=>document.getElementById(i).value='');document.querySelectorAll('#t-colors .csw').forEach((s,i)=>s.classList.toggle('sel',i===0));om('mo-ta');}
 function openTeacherEdit(id){const t=DB.teachers.find(x=>x.id===id);if(!t)return;document.getElementById('ta-mt').textContent='Edit Teacher';document.getElementById('t-eid').value=id;document.getElementById('t-name').value=t.name;document.getElementById('t-dept').value=t.dept||'';document.getElementById('t-email').value=t.email||'';document.getElementById('t-phone').value=t.phone||'';document.getElementById('t-office').value=t.office||'';document.getElementById('t-hours').value=t.hours||'';document.getElementById('t-notes').value=t.notes||'';document.querySelectorAll('#t-colors .csw').forEach(s=>s.classList.toggle('sel',s.dataset.c===t.color));om('mo-ta');}
 function pc(el){el.closest('.crow').querySelectorAll('.csw').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');}
-function saveT(){const name=document.getElementById('t-name').value.trim();if(!name)return;const color=document.querySelector('#t-colors .csw.sel')?.dataset.c||'#5c4fd6';const obj={name,dept:document.getElementById('t-dept').value.trim(),email:document.getElementById('t-email').value.trim(),phone:document.getElementById('t-phone').value.trim(),office:document.getElementById('t-office').value.trim(),hours:document.getElementById('t-hours').value.trim(),notes:document.getElementById('t-notes').value.trim(),color};const eid=document.getElementById('t-eid').value;if(eid){const i=DB.teachers.findIndex(t=>t.id==eid);if(i>-1)DB.teachers[i]={...DB.teachers[i],...obj};}else DB.teachers.push({id:Date.now(),...obj});persist();cm('mo-ta');refresh();}
+function saveT(){
+  if(document.body.classList.contains('view-only')){alert('👁 View only — connect Google Drive to edit');return;}const name=document.getElementById('t-name').value.trim();if(!name)return;const color=document.querySelector('#t-colors .csw.sel')?.dataset.c||'#5c4fd6';const obj={name,dept:document.getElementById('t-dept').value.trim(),email:document.getElementById('t-email').value.trim(),phone:document.getElementById('t-phone').value.trim(),office:document.getElementById('t-office').value.trim(),hours:document.getElementById('t-hours').value.trim(),notes:document.getElementById('t-notes').value.trim(),color};const eid=document.getElementById('t-eid').value;if(eid){const i=DB.teachers.findIndex(t=>t.id==eid);if(i>-1)DB.teachers[i]={...DB.teachers[i],...obj};}else DB.teachers.push({id:Date.now(),...obj});persist();cm('mo-ta');refresh();}
 function delT(id){if(!confirm('Delete teacher?'))return;DB.teachers=DB.teachers.filter(t=>t.id!==id);persist();cm('mo-tv');refresh();}
 
 // ══ SETTINGS ══
@@ -1218,10 +1221,11 @@ function refresh(){
 // ══ INIT ══
 function init(){
   if(DB.settings.theme)applyTheme(DB.settings.theme);
-  // Default: view-only until Google Drive connected
-  setOwnerMode(false);
+  // Start as view-only immediately — Drive connect upgrades to owner
+  document.body.classList.add('view-only');
+  document.body.classList.remove('owner-mode');
   updateSb();renderDash();renderCal3();
-  // Try to load public data for viewers (will be overridden if owner connects Drive)
+  // Try to load public snapshot (for friends) or stay on seed data
   tryLoadPublicData();
 }
 init();
@@ -1546,58 +1550,47 @@ async function publishPublicSnapshot() {
   // This way NO backend needed — data travels in the URL for small datasets,
   // or we use a public Google Drive file share
   try {
-    // Check if public file exists
-    const list = await gapi.client.drive.files.list({
-      spaces: 'appDataFolder',
-      fields: 'files(id,name)',
-      q: "name='mdps-public-snapshot.json'"
-    });
-    let pubFileId = list.result.files?.[0]?.id;
     const pubData = buildPublicData();
+    let pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id') || '';
+
     if (!pubFileId) {
-      // Create public snapshot file
-      const meta = { name: 'mdps-public-snapshot.json', parents: ['appDataFolder'] };
+      // Create new file in regular Drive (not appDataFolder) so it can be public
+      const meta = { name: 'mdps-tracker-public.json' };
       const boundary = '-------271828182845';
-      const mp = `--${boundary}
-Content-Type: application/json
-
-${JSON.stringify(meta)}
---${boundary}
-Content-Type: application/json
-
-${JSON.stringify(pubData)}
---${boundary}--`;
+      const mp = '--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(meta) + '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(pubData) + '\r\n--' + boundary + '--';
       const cr = await gapi.client.request({
         path:'https://www.googleapis.com/upload/drive/v3/files',
         method:'POST', params:{uploadType:'multipart'},
-        headers:{'Content-Type':`multipart/related; boundary="${boundary}"`},
+        headers:{'Content-Type':'multipart/related; boundary="' + boundary + '"'},
         body:mp
       });
       pubFileId = cr.result.id;
-      // Make it publicly readable
+      // Make publicly readable by anyone
       await gapi.client.request({
         path:`https://www.googleapis.com/drive/v3/files/${pubFileId}/permissions`,
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({role:'reader', type:'anyone'})
       });
-      // Store the public file ID in localStorage so viewers can load it
       localStorage.setItem('mdps-public-file-id', pubFileId);
       DB.settings.publicFileId = pubFileId;
+      BAKED_PUBLIC_FILE_ID = pubFileId;
       persist();
+      console.log('%c📌 Public File ID: ' + pubFileId, 'color:#0d7a56;font-weight:bold;font-size:14px');
     } else {
-      // Update existing
+      // Update existing public file
       await gapi.client.request({
         path:`https://www.googleapis.com/upload/drive/v3/files/${pubFileId}`,
         method:'PATCH', params:{uploadType:'media'},
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify(pubData)
       });
+      BAKED_PUBLIC_FILE_ID = pubFileId;
     }
-    setDriveStatus('✅ Public · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+    setDriveStatus('✅ Live · ' + new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
   } catch(e) {
     console.warn('Public publish failed:', e);
-    setDriveStatus('✅ Saved (private only)');
+    setDriveStatus('✅ Saved');
   }
 }
 
@@ -1619,42 +1612,68 @@ function buildPublicData() {
   };
 }
 
+// ── Public data file ID (set automatically after owner first connects) ──
+// This is baked in so friends can always load the latest data without signing in
+let BAKED_PUBLIC_FILE_ID = ''; // auto-filled by owner on first connect
+
 // Try to load public data for viewers (non-owners)
 async function tryLoadPublicData() {
-  // Get public file ID — stored in URL hash, or in a known location
-  const pubFileId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  // Priority: baked ID > DB settings > localStorage
+  const pubFileId = BAKED_PUBLIC_FILE_ID
+    || DB.settings.publicFileId
+    || localStorage.getItem('mdps-public-file-id');
+
   if (!pubFileId) {
-    // No public data available yet — show view-only with seed data
-    showViewOnlyNotice();
+    // No public file yet — show view-only with local/seed data
+    setOwnerMode(false);
+    showViewOnlyNotice('Yeasir');
     return;
   }
+
   try {
-    setDriveStatus('🔄 Loading...');
-    const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media`, {
-      headers: { 'Accept': 'application/json' }
-    });
-    if (!resp.ok) throw new Error('Not accessible');
-    const pubData = await resp.json();
-    // Load public data into DB (view-only)
-    DB.events = pubData.events || [];
-    DB.teachers = pubData.teachers || [];
-    DB.courseNotes = pubData.courseNotes || {};
-    if (pubData.settings) {
-      DB.settings.name = pubData.settings.name || DB.settings.name;
-      DB.settings.id = pubData.settings.id || DB.settings.id;
-      DB.settings.program = pubData.settings.program || DB.settings.program;
-      DB.settings.theme = pubData.settings.theme || DB.settings.theme;
-      DB.settings.photo = pubData.settings.photo || '';
-      DB.settings.publicFileId = pubData.settings.publicFileId || pubFileId;
+    setDriveStatus('🔄 Loading data...');
+    // Public Drive files can be fetched via the export URL without auth
+    let pubData;
+    const urls = [
+      `https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media`,
+      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=1`
+    ];
+    let fetched = false;
+    for (const url of urls) {
+      try {
+        const token = gapi?.client?.getToken()?.access_token;
+        const headers = token ? { Authorization: 'Bearer ' + token } : {};
+        const r = await fetch(url, { headers });
+        if (r.ok) { pubData = await r.json(); fetched = true; break; }
+      } catch(fe) { continue; }
     }
+    if (!fetched) throw new Error('Could not fetch public data');
+
+    // Load public data into DB (view-only, don't persist to localStorage)
+    const merged = {
+      events:      pubData.events      || DB.events,
+      teachers:    pubData.teachers    || DB.teachers,
+      courseNotes: pubData.courseNotes || DB.courseNotes,
+      settings: {
+        ...DB.settings,
+        name:    pubData.settings?.name    || DB.settings.name,
+        id:      pubData.settings?.id      || DB.settings.id,
+        program: pubData.settings?.program || DB.settings.program,
+        theme:   pubData.settings?.theme   || DB.settings.theme,
+        photo:   pubData.settings?.photo   || '',
+        publicFileId: pubFileId
+      }
+    };
+    DB = merged;
     setOwnerMode(false);
-    showViewOnlyNotice(pubData.settings?.name);
+    showViewOnlyNotice(DB.settings.name);
     applyTheme(DB.settings.theme || 'light');
     setDriveStatus('');
     refresh();
   } catch(e) {
     console.warn('Could not load public data:', e);
-    showViewOnlyNotice();
+    setOwnerMode(false);
+    showViewOnlyNotice('Yeasir');
     setDriveStatus('');
   }
 }
