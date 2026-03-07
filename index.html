@@ -2027,6 +2027,12 @@ async function publishPublicSnapshot() {
         body: JSON.stringify(pubData)
       });
       if(!upd.ok) throw new Error('Update failed: ' + upd.status);
+      // Re-apply public permission on every update (in case it was reset)
+      await fetch('https://www.googleapis.com/drive/v3/files/' + pubFileId + '/permissions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      }).catch(() => {}); // ignore if already exists
       BAKED_PUBLIC_FILE_ID = pubFileId;
     }
     setDriveStatus('\u2705 Synced \u00b7 ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
@@ -2065,11 +2071,30 @@ async function tryLoadPublicData() {
   try {
     setDriveStatus('\ud83d\udd04 Loading...');
     const cb = Date.now();
-    // allorigins.win is a CORS proxy that reliably fetches Google Drive public files
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://drive.google.com/uc?export=download&id=' + pubFileId + '&t=' + cb);
-    const r = await fetch(proxyUrl, { cache: 'no-store' });
-    if(!r.ok) throw new Error('Proxy fetch failed: ' + r.status);
-    const text = await r.text();
+    // Try multiple proxy/URL strategies to handle Google Drive's redirect/scan pages
+    let text = '';
+    const driveUrls = [
+      'https://drive.google.com/uc?export=download&confirm=t&id=' + pubFileId,
+      'https://drive.google.com/uc?export=download&id=' + pubFileId,
+    ];
+    let lastErr = '';
+    for (const driveUrl of driveUrls) {
+      for (const proxy of [
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?url=',
+      ]) {
+        try {
+          const proxyUrl = proxy + encodeURIComponent(driveUrl + '&t=' + cb);
+          const r = await fetch(proxyUrl, { cache: 'no-store' });
+          if (!r.ok) { lastErr = 'HTTP ' + r.status; continue; }
+          const t = await r.text();
+          if (t.trim().startsWith('{')) { text = t; break; }
+          lastErr = 'Not JSON: ' + t.substring(0, 60);
+        } catch(fe) { lastErr = fe.message; }
+      }
+      if (text) break;
+    }
+    if (!text) throw new Error('All proxies failed: ' + lastErr);
     const trimmed = text.trim();
     if(!trimmed.startsWith('{')) throw new Error('Not JSON: ' + trimmed.substring(0, 80));
     const pubData = JSON.parse(trimmed);
