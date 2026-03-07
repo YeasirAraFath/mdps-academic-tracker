@@ -673,6 +673,7 @@ select.finput{cursor:pointer;}
       <span id="gdrive-label">Connect Google Drive</span>
     </button>
     <div id="gdrive-status" onclick="copyShareUrl()" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;cursor:pointer;"></div>
+    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;font-size:0.6rem;padding:0.25rem 0.5rem;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:6px;color:var(--accent2);cursor:pointer;font-family:var(--mono);">🔄 Force Sync to Friends</button>
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
       👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
       <div id="last-updated-display" style="font-size:0.58rem;color:var(--text3);margin-top:0.2rem;font-family:var(--mono);"></div>
@@ -1797,6 +1798,21 @@ function setOwnerMode(v) {
   isOwner=v;
   document.body.classList.toggle('view-only',!v);
   document.body.classList.toggle('owner-mode',v);
+  const fsBtn = document.getElementById('force-sync-btn');
+  if(fsBtn) fsBtn.style.display = v ? 'block' : 'none';
+}
+
+async function forceSyncNow() {
+  const btn = document.getElementById('force-sync-btn');
+  if(btn) { btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
+  try {
+    await publishPublicSnapshot();
+    if(btn) { btn.textContent = '✅ Synced! Friends can see updates'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Force Sync to Friends'; }, 3000);
+  } catch(e) {
+    if(btn) { btn.textContent = '❌ Sync failed — try again'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Force Sync to Friends'; }, 3000);
+  }
 }
 
 // ── THEME ──
@@ -2039,23 +2055,25 @@ async function tryLoadPublicData() {
     const cb = Date.now();
     // googleapis direct API URL MUST be first — drive.google.com/uc is deprecated
     // and returns HTML pages that silently break JSON parsing
+    // Try multiple strategies to fetch the public JSON file
     const urls = [
-      `https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media&_cb=${cb}`,
-      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=t&_cb=${cb}`,
+      // Strategy 1: Direct Drive download (works if file is truly public + CORS ok)
+      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=t&cachebust=${cb}`,
+      // Strategy 2: CORS proxy as reliable fallback
+      `https://corsproxy.io/?https://drive.google.com/uc?export=download%26id=${pubFileId}%26confirm=t%26cachebust=${cb}`,
+      // Strategy 3: Another CORS proxy
+      `https://api.allorigins.win/raw?url=${encodeURIComponent('https://drive.google.com/uc?export=download&id='+pubFileId+'&confirm=t&cachebust='+cb)}`,
     ];
     let pubData = null;
     for(const url of urls) {
       try {
-        const r = await fetch(url, {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
-        });
+        const r = await fetch(url, { cache: 'no-store' });
         if(!r.ok) continue;
         const text = await r.text();
-        // CRITICAL: skip Google HTML warning/error pages — only accept real JSON
         const trimmed = text.trim();
         if(!trimmed.startsWith('{')) continue;
         pubData = JSON.parse(trimmed);
+        console.log('✅ Loaded public data via:', url);
         break;
       } catch(e) { console.warn('Fetch attempt failed:', url, e); }
     }
