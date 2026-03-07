@@ -1982,7 +1982,7 @@ async function publishPublicSnapshot() {
       const shareUrl = `${location.origin}${location.pathname}?view=1&id=${pubFileId}`;
       localStorage.setItem('mdps-share-url', shareUrl);
     } else {
-      // Always overwrite with latest data - no multipart, just media upload
+      // Always overwrite with latest data
       await gapi.client.request({
         path: `https://www.googleapis.com/upload/drive/v3/files/${pubFileId}`,
         method: 'PATCH',
@@ -1990,7 +1990,7 @@ async function publishPublicSnapshot() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(pubData)
       });
-      // Also patch metadata with a new modifiedTime to bust server-side cache
+      // Patch metadata to update modifiedTime — forces Drive CDN to serve fresh content
       await gapi.client.request({
         path: `https://www.googleapis.com/drive/v3/files/${pubFileId}`,
         method: 'PATCH',
@@ -2037,28 +2037,27 @@ async function tryLoadPublicData() {
   try {
     setDriveStatus('🔄 Loading...');
     const cb = Date.now();
-    // Strategy order: googleapis direct API (best cache bypass) → uc download fallback
+    // googleapis direct API URL MUST be first — drive.google.com/uc is deprecated
+    // and returns HTML pages that silently break JSON parsing
     const urls = [
-      `https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media&_=${cb}`,
-      `https://drive.google.com/uc?export=download&id=${pubFileId}&_=${cb}&confirm=t`,
-      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=1&_=${cb}`,
+      `https://www.googleapis.com/drive/v3/files/${pubFileId}?alt=media&_cb=${cb}`,
+      `https://drive.google.com/uc?export=download&id=${pubFileId}&confirm=t&_cb=${cb}`,
     ];
     let pubData = null;
     for(const url of urls) {
       try {
         const r = await fetch(url, {
           cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          }
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
         });
-        if(r.ok) {
-          const text = await r.text();
-          // Skip Google HTML warning pages
-          if(text.trim().startsWith('{')) { pubData = JSON.parse(text); break; }
-        }
-      } catch(e) {}
+        if(!r.ok) continue;
+        const text = await r.text();
+        // CRITICAL: skip Google HTML warning/error pages — only accept real JSON
+        const trimmed = text.trim();
+        if(!trimmed.startsWith('{')) continue;
+        pubData = JSON.parse(trimmed);
+        break;
+      } catch(e) { console.warn('Fetch attempt failed:', url, e); }
     }
     if(!pubData) throw new Error('All fetch attempts failed');
     DB = {
@@ -2072,14 +2071,13 @@ async function tryLoadPublicData() {
     showLastUpdated(pubData._published);
     setDriveStatus('');
     refresh(); updateSb();
-    // Auto-refresh every 30 seconds so friends always see latest data
+    // Auto-refresh every 30 seconds so friends always see latest
     setTimeout(tryLoadPublicData, 30000);
   } catch(e) {
     console.warn('Public load failed:', e);
     setOwnerMode(false);
     showViewOnlyNotice('AraFath');
-    setDriveStatus('⚠️ Could not load');
-    // Retry after 20s
+    setDriveStatus('⚠️ Could not load — retrying...');
     setTimeout(tryLoadPublicData, 20000);
   }
 }
