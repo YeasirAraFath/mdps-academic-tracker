@@ -1325,7 +1325,7 @@ if (!STUDENTS.length) {
 <script>
 // ── Config ──
 const CLIENT_ID  = '486694229314-tt7b0q79ju7uf2vjp7ihrpoeohg0ujjc.apps.googleusercontent.com';
-const SCOPES     = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
+const SCOPES     = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILE = 'mdps-tracker-data.json';
 
 let gapiReady = false;
@@ -1338,20 +1338,26 @@ function gapiLoaded() {
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
     });
     gapiReady = true;
-    // If we already have a stored token try silent restore
+    // Check if stored token has the right scopes (drive.file required)
     const stored = localStorage.getItem('mdps-gdrive-token');
-    if (stored) {
+    const scopeOk = localStorage.getItem('mdps-gdrive-scope-v2'); // version flag
+    if (stored && scopeOk) {
       try {
         const tok = JSON.parse(stored);
         gapi.client.setToken(tok);
-        // Verify still valid
-        await gapi.client.drive.files.list({ spaces:'appDataFolder', fields:'files(id,name)', pageSize:1 });
+        // Verify token works with drive.file scope by testing a files.list
+        await gapi.client.drive.files.list({ fields:'files(id)', pageSize:1 });
         await afterSignIn();
       } catch(e) {
         localStorage.removeItem('mdps-gdrive-token');
+  localStorage.removeItem('mdps-gdrive-scope-v2');
+        localStorage.removeItem('mdps-gdrive-scope-v2');
         setDriveUI('disconnected');
       }
     } else {
+      // Clear old token — it had wrong scope
+      localStorage.removeItem('mdps-gdrive-token');
+  localStorage.removeItem('mdps-gdrive-scope-v2');
       setDriveUI('disconnected');
     }
   });
@@ -1366,6 +1372,7 @@ function ensureTokenClient() {
     callback: async (resp) => {
       if (resp.error) { setDriveStatus('❌ ' + resp.error); return; }
       localStorage.setItem('mdps-gdrive-token', JSON.stringify(gapi.client.getToken()));
+      localStorage.setItem('mdps-gdrive-scope-v2', '1'); // mark correct scope version
       await afterSignIn();
     }
   });
@@ -1381,7 +1388,7 @@ function handleDriveClick() {
   }
   if (!gapiReady) { setDriveStatus('Loading... please wait'); setTimeout(handleDriveClick, 1200); return; }
   ensureTokenClient();
-  tokenClient.requestAccessToken({ prompt: 'consent' });
+  tokenClient.requestAccessToken({ prompt: 'consent', hint: '' });
 }
 
 // ── After sign in ──
@@ -1410,18 +1417,18 @@ async function afterSignIn() {
   }
 }
 
-// ── Find or create appDataFolder file ──
+// ── Find or create Drive file ──
 async function findOrCreateFile() {
   const list = await gapi.client.drive.files.list({
-    spaces: 'appDataFolder',
+    spaces: 'drive',
     fields: 'files(id,name)',
-    q: `name='${DRIVE_FILE}'`
+    q: `name='${DRIVE_FILE}' and trashed=false`
   });
   if (list.result.files && list.result.files.length > 0) {
     return list.result.files[0].id;
   }
   // Create new file with current DB
-  const meta = { name: DRIVE_FILE, parents: ['appDataFolder'] };
+  const meta = { name: DRIVE_FILE }; // stored in root Drive (drive.file scope)
   const body = JSON.stringify(DB);
   const boundary = '-------314159265358979';
   const CRLF2 = '\r\n';
@@ -1494,6 +1501,7 @@ function disconnectDrive() {
   gDriveFileId = null;
   tokenClient = null;
   localStorage.removeItem('mdps-gdrive-token');
+  localStorage.removeItem('mdps-gdrive-scope-v2');
   setDriveUI('disconnected');
 }
 
