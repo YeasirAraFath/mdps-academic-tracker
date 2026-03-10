@@ -593,6 +593,7 @@ body.owner-mode .owner-badge{display:flex;}
 .finput{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:0.82rem;padding:0.6rem 0.8rem;border-radius:var(--rsm);outline:none;transition:border-color 0.15s;}
 .finput:focus{border-color:var(--blue);}
 select.finput{cursor:pointer;}
+textarea.finput{resize:vertical;min-height:110px;line-height:1.55;}
 .fbtns{display:flex;gap:0.6rem;margin-top:1.2rem;justify-content:flex-end;}
 .type-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.4rem;}
 .type-btn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:0.45rem 0.3rem;cursor:pointer;font-family:var(--font);font-size:0.7rem;font-weight:600;color:var(--text2);text-align:center;transition:all 0.15s;}
@@ -1180,7 +1181,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
         <option value="2">2nd Semester</option>
       </select>
     </div>
-    <div class="frow"><label>Notes (optional)</label><input class="finput" id="ev-notes" placeholder="Any extra info..."></div>
+    <div class="frow"><label>Notes (optional)</label><textarea class="finput" id="ev-notes" rows="5" placeholder="Any extra info..." style="resize:vertical;min-height:110px;line-height:1.55;font-size:0.82rem;"></textarea></div>
     <div class="fbtns">
       <button class="btn btn-danger" onclick="closeEvModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="ev-delete-btn" onclick="deleteEvModal()" style="display:none">🗑 Delete</button>
@@ -2076,7 +2077,7 @@ function openDetail(id) {
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">SEMESTER</div>${e.semester||'—'}</div>
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">DAYS</div><span style="font-weight:700;color:${dl(e.date)<=0?'var(--text3)':dl(e.date)<=2?'var(--red)':dl(e.date)<=7?'var(--amber)':'var(--green)'}">${cdT(dl(e.date))}</span></div>
     </div>
-    ${e.notes?`<div style="margin-top:0.9rem;font-size:0.75rem;color:var(--text2);background:var(--bg2);border-radius:var(--rsm);padding:0.6rem 0.8rem;border:1px solid var(--border)">${e.notes}</div>`:''}
+    ${e.notes?`<div style="margin-top:0.9rem;font-size:0.75rem;color:var(--text2);background:var(--bg2);border-radius:var(--rsm);padding:0.6rem 0.8rem;border:1px solid var(--border);white-space:pre-wrap;word-break:break-word;">${e.notes}</div>`:''}
   `;
   document.getElementById('ov-detail').classList.add('open');
 }
