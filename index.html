@@ -850,7 +850,6 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
     <button class="nb" data-p="events" onclick="go('events')"><span class="ni">📋</span>All Events</button>
     <button class="nb" data-p="courses" onclick="go('courses')"><span class="ni">📘</span>Courses</button>
     <button class="nb" data-p="teachers" onclick="go('teachers')"><span class="ni">👨‍🏫</span>Teachers</button>
-    <button class="nb" data-p="students" onclick="go('students')"><span class="ni">🎓</span>Students</button>
     <button class="nb" data-p="studyfiles" onclick="go('studyfiles')"><span class="ni"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><path d="M13 2v5h5"/><path d="M7 11h6M7 14h4"/></svg></span>Study Files</button>
     <div class="ng-label" style="margin-top:0.5rem">Quick Filter</div>
     <button class="nb" data-p="events" data-f="ct" onclick="go('events','ct')"><span class="ndot" style="background:var(--ct)"></span>Class Tests<span class="nc" id="nc-ct">0</span></button>
@@ -1123,26 +1122,6 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
   <div id="sf-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;"></div>
 </div>
 
-<!-- STUDENTS -->
-<div class="page" id="page-students">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:0.7rem">
-      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
-      <div class="topbar-l"><h2>Students</h2><p>MDPS 26 Batch · Student Directory</p></div>
-    </div>
-  </div>
-  <div style="display:flex;gap:0.6rem;margin-bottom:0.9rem;flex-wrap:wrap;align-items:center">
-    <input id="student-search" placeholder="Search by name or email..."
-      style="padding:0.45rem 0.8rem;border:1px solid var(--border);border-radius:var(--rsm);background:var(--card);color:var(--text);font-family:var(--font);font-size:0.76rem;width:220px;outline:none;"
-      oninput="renderStudents()">
-    <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-      📂 Import CSV
-      <input type="file" id="csv-upload" accept=".csv" style="display:none" onchange="importCSV(this)">
-    </label>
-    <button class="btn btn-ghost btn-sm" onclick="exportStudentsCSV()">⬇️ Export</button>
-  </div>
-  <div id="student-list"></div>
-</div>
 
 </main>
 </div>
@@ -1942,78 +1921,6 @@ function renderTeachers() {
   }).join('');
 }
 
-// STUDENTS DATA
-const STUDENTS_SEED = [
-  {name:"Md. Yeasir AraFath",id:"261510",email:"yeasirafath261510@gmail.com"},
-  {name:"Naomi Biswas",id:"261511",email:""},
-  {name:"Md. Rabiul Alam",id:"261512",email:""},
-  {name:"Afnan Jabir",id:"261513",email:""},
-  {name:"Tahmid Ahmed",id:"261514",email:""},
-  {name:"Tania Begum",id:"261515",email:""},
-  {name:"Mst. Sabiha Shanta",id:"261516",email:""},
-  {name:"Rabia Khatun",id:"261517",email:""},
-  {name:"Jannatul Ferdous",id:"261518",email:""},
-  {name:"Hriday Dhal",id:"261519",email:""},
-  {name:"Md. Mehedi Hasan",id:"261520",email:""},
-  {name:"Md. Sahidul Islam",id:"261521",email:""},
-  {name:"Md. Monirul Islam",id:"261522",email:""},
-  {name:"Md. Sabbir Ahmad Shawon",id:"261523",email:""},
-  {name:"Md. Robiul Islam",id:"261524",email:""},
-  {name:"Mehnaz Alam",id:"261525",email:""},
-  {name:"Farzana Akter",id:"261526",email:""},
-  {name:"Md. Kawsar Hossain",id:"261527",email:""},
-  {name:"Md. Jahir Raihan",id:"261528",email:""},
-  {name:"Pranto Sikder",id:"261529",email:""},
-  {name:"Ayesha Siddiqua",id:"261530",email:""},
-  {name:"Sadia Islam",id:"261531",email:""},
-  {name:"Habibur Rahman Rimel",id:"261532",email:""},
-  {name:"Sinthia Khatun",id:"261533",email:""},
-  {name:"Nishat Tasnim",id:"261534",email:""},
-  {name:"Md. Forhad Hossain",id:"261535",email:""},
-  {name:"Md. Raisul Islam",id:"261536",email:""},
-  {name:"Md. Miran Hossain",id:"261537",email:""},
-  {name:"Shahriar Hossain",id:"261538",email:""},
-  {name:"Mst. Monira Khatun",id:"261539",email:""},
-  {name:"Afiya Akter",id:"261540",email:""},
-];
-let studentsDB = JSON.parse(localStorage.getItem('mdps-students')||'null') || STUDENTS_SEED;
-function renderStudents() {
-  const q = (document.getElementById('student-search')?.value||'').toLowerCase();
-  const filtered = studentsDB.filter(s=>!q||s.name.toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||s.id.includes(q));
-  const el = document.getElementById('student-list'); if(!el) return;
-  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0.65rem">
-    ${filtered.map((s,i)=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.85rem 1rem;display:flex;align-items:center;gap:0.7rem;box-shadow:var(--sh);transition:all 0.15s;cursor:default" onmouseover="this.style.borderColor='rgba(79,124,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="width:36px;height:36px;border-radius:50%;background:${['#4f7cff','#22c55e','#a78bfa','#f59e0b','#ef4444'][i%5]}22;color:${['#4f7cff','#22c55e','#a78bfa','#f59e0b','#ef4444'][i%5]};font-size:0.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${['#4f7cff','#22c55e','#a78bfa','#f59e0b','#ef4444'][i%5]}44">${ini(s.name)}</div>
-      <div style="min-width:0">
-        <div style="font-size:0.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
-        <div style="font-size:0.62rem;color:var(--text3);font-family:var(--mono)">${s.id}${s.email?` · ${s.email}`:''}</div>
-      </div>
-    </div>`).join('')}
-  </div><div style="font-size:0.68rem;color:var(--text3);margin-top:0.7rem;font-family:var(--mono)">${filtered.length} of ${studentsDB.length} students</div>`;
-}
-function importCSV(input) {
-  const f = input.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = e => {
-    const lines = e.target.result.split('\n').filter(Boolean);
-    const header = lines[0].toLowerCase().split(',');
-    const ni = header.findIndex(h=>h.includes('name'));
-    const ii = header.findIndex(h=>h.includes('id'));
-    const ei = header.findIndex(h=>h.includes('email'));
-    const newSt = lines.slice(1).map(l=>{
-      const cols = l.split(',');
-      return { name:(cols[ni]||'').trim(), id:(cols[ii]||'').trim(), email:(cols[ei]||'').trim() };
-    }).filter(s=>s.name);
-    if(newSt.length>0) { studentsDB=[...studentsDB,...newSt]; localStorage.setItem('mdps-students',JSON.stringify(studentsDB)); renderStudents(); }
-  };
-  r.readAsText(f);
-}
-function exportStudentsCSV() {
-  const csv = 'Name,ID,Email\n'+studentsDB.map(s=>`${s.name},${s.id},${s.email||''}`).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='mdps26_students.csv'; a.click();
-}
 
 // MODAL - ADD/EDIT EVENT
 let editEvId = null;
