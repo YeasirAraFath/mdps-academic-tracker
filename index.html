@@ -593,7 +593,7 @@ body.owner-mode .owner-badge{display:flex;}
 .finput{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:0.82rem;padding:0.6rem 0.8rem;border-radius:var(--rsm);outline:none;transition:border-color 0.15s;}
 .finput:focus{border-color:var(--blue);}
 select.finput{cursor:pointer;}
-textarea.finput{resize:vertical;min-height:110px;line-height:1.55;}
+textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:0.01em;word-spacing:0.05em;white-space:pre-wrap;}
 .fbtns{display:flex;gap:0.6rem;margin-top:1.2rem;justify-content:flex-end;}
 .type-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.4rem;}
 .type-btn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:0.45rem 0.3rem;cursor:pointer;font-family:var(--font);font-size:0.7rem;font-weight:600;color:var(--text2);text-align:center;transition:all 0.15s;}
@@ -1183,7 +1183,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
         <option value="2">2nd Semester</option>
       </select>
     </div>
-    <div class="frow"><label>Notes (optional)</label><textarea class="finput" id="ev-notes" rows="5" placeholder="Any extra info..." style="resize:vertical;min-height:110px;line-height:1.55;font-size:0.82rem;"></textarea></div>
+    <div class="frow"><label>Notes (optional)</label><textarea class="finput" id="ev-notes" rows="6" placeholder="Any extra info..." style="resize:vertical;min-height:130px;line-height:1.8;font-size:0.82rem;white-space:pre-wrap;word-break:break-word;letter-spacing:0.01em;"></textarea></div>
     <div class="fbtns">
       <button class="btn btn-danger" onclick="closeEvModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="ev-delete-btn" onclick="deleteEvModal()" style="display:none">🗑 Delete</button>
