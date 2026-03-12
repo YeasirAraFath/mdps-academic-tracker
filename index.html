@@ -1570,7 +1570,7 @@ function renderTaskList() {
           ${teacherName ? `<span class="dt-teacher">👤 ${teacherName}</span>` : ''}
         </div>
       </div>
-      <span class="dt-due" style="color:${dueColor}">${fmtS(e.date)}</span>
+      <span class="dt-due" style="color:${dueColor};text-align:right;line-height:1.4">${fmtS(e.date)}${e.type==='class'&&e.startTime?`<br><span style="font-size:0.62rem;color:var(--class);font-family:var(--mono);font-weight:600">⏰ ${e.startTime}</span>`:''}</span>
       <span class="dt-check" onclick="event.stopPropagation();toggleDone(${e.id})" title="Mark done">✓</span>
     </div>`;
   }).join('');
