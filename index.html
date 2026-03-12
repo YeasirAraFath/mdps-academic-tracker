@@ -1144,6 +1144,28 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
     </div>
     <div class="frow"><label>Title</label><input class="finput" id="ev-title" placeholder="e.g. CT 1 – Development Theories"></div>
     <div class="frow"><label>Date</label><input type="date" class="finput" id="ev-date"></div>
+    <div class="frow" id="ev-time-row" style="display:none">
+      <label>Class Start Time</label>
+      <div style="display:flex;gap:0.4rem;align-items:center;">
+        <select class="finput" id="ev-time-hour" style="flex:1;min-width:0;">
+          <option value="">HH</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+        <span style="color:var(--text2);font-weight:700;font-size:1rem;">:</span>
+        <select class="finput" id="ev-time-min" style="flex:1;min-width:0;">
+          <option value="">MM</option>
+          <option>00</option><option>05</option><option>10</option><option>15</option>
+          <option>20</option><option>25</option><option>30</option><option>35</option>
+          <option>40</option><option>45</option><option>50</option><option>55</option>
+        </select>
+        <select class="finput" id="ev-time-ampm" style="flex:1;min-width:0;">
+          <option>AM</option>
+          <option>PM</option>
+        </select>
+      </div>
+    </div>
     <div class="frow"><label>Course</label>
       <select class="finput" id="ev-course">
         <option value="">— Select course —</option>
@@ -1934,6 +1956,13 @@ function openEvModal(ev) {
   document.getElementById('ev-course').value = ev?.course||'';
   document.getElementById('ev-notes').value = ev?.notes||'';
   document.getElementById('ev-semester').value = ev?.semester||1;
+  document.getElementById('ev-time-hour').value = '';
+  document.getElementById('ev-time-min').value = '';
+  document.getElementById('ev-time-ampm').value = 'AM';
+  if(ev?.startTime) {
+    const m = ev.startTime.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if(m) { document.getElementById('ev-time-hour').value=m[1]; document.getElementById('ev-time-min').value=m[2]; document.getElementById('ev-time-ampm').value=m[3].toUpperCase(); }
+  }
   // Teachers
   const ts = document.getElementById('ev-teacher');
   ts.innerHTML='<option value="">— Optional —</option>'+DB.teachers.map(t=>`<option value="${t.name}" ${ev?.teacher===t.name?'selected':''}>${t.name}</option>`).join('');
@@ -1945,6 +1974,7 @@ function selType(t) {
   selEvType=t;
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel-ct','sel-assignment','sel-presentation','sel-class'));
   document.querySelector(`.type-btn[data-t="${t}"]`)?.classList.add('sel-'+t);
+  document.getElementById('ev-time-row').style.display = (t==='class') ? '' : 'none';
 }
 function saveEvModal() {
   const title = document.getElementById('ev-title').value.trim();
@@ -1954,6 +1984,7 @@ function saveEvModal() {
     course:document.getElementById('ev-course').value,
     teacher:document.getElementById('ev-teacher').value,
     semester:+document.getElementById('ev-semester').value,
+    startTime: selEvType==='class' ? (()=>{ const h=document.getElementById('ev-time-hour').value; const m=document.getElementById('ev-time-min').value; const ap=document.getElementById('ev-time-ampm').value; return (h&&m)?`${h}:${m} ${ap}`:''; })() : '',
     notes:document.getElementById('ev-notes').value.trim(), done:false };
   if(editEvId) { const i=DB.events.findIndex(x=>x.id===editEvId); DB.events[i]=ev; }
   else DB.events.push(ev);
@@ -1974,6 +2005,7 @@ function openDetail(id) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;font-size:0.78rem">
       <div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">DATE</div>${fmtD(e.date)}</div>
+      ${e.type==='class'?`<div><div style="font-size:0.6rem;color:var(--text3);margin-bottom:2px">START TIME</div>${e.startTime||'—'}</div>`:'<div></div>'}
       <div>
         <div style="font-size:0.6rem;color:var(--text3);margin-bottom:4px">STATUS</div>
         <button onclick="toggleDoneFromDetail(${e.id})" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;cursor:pointer;font-size:0.72rem;font-weight:700;transition:all 0.15s;background:${e.done?'rgba(52,211,153,0.15)':'rgba(245,166,35,0.15)'};color:${e.done?'var(--class)':'var(--assign)'};border:1px solid ${e.done?'rgba(52,211,153,0.4)':'rgba(245,166,35,0.4)'}">${e.done?'✅ Completed':'⏳ Pending'}</button>
