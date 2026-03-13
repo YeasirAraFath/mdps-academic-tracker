@@ -631,7 +631,6 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   .dash-layout{grid-template-columns:1fr !important;padding:1.2rem 1.4rem 1.8rem;}
   .dash-greeting{font-size:1.3rem;}
   .dash-topbar{padding:1.2rem 1.4rem 1rem;}
-  .dash-topbar-l{justify-content:flex-start !important;}
   .page{padding:0 1.4rem 2rem;}
   .topbar{padding:1.2rem 1.4rem 0;}
 }
@@ -670,7 +669,6 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   .dash-mob-nav{
     display:flex !important;
     align-items:center;
-    justify-content:flex-start;
     height:48px;
     padding:0 14px;
     gap:8px;
@@ -699,6 +697,34 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     background:rgba(79,124,255,0.12);
     border-color:rgba(79,124,255,0.3);
     color:var(--blue2);
+  }
+
+  /* 🌙 Theme toggle in mobile nav row */
+  .mob-theme-btn{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    flex-shrink:0;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    border-radius:9px;
+    font-size:1rem;
+    cursor:pointer;
+    transition:background 0.15s, border-color 0.15s;
+  }
+  .mob-theme-btn:hover,.mob-theme-btn:active{
+    background:rgba(79,124,255,0.12);
+    border-color:rgba(79,124,255,0.3);
+  }
+  body.light-mode .mob-theme-btn{
+    background:#ffffff;
+    border-color:rgba(60,80,140,0.16);
+  }
+  body.light-mode .mob-theme-btn:hover{
+    background:rgba(61,98,240,0.07);
+    border-color:rgba(61,98,240,0.25);
   }
   body.light-mode .mob-menu-btn{
     background:#ffffff;
@@ -733,7 +759,6 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     display:flex !important;
     flex-direction:row;
     align-items:center;
-    justify-content:flex-start;
     padding:14px 16px 12px;
     gap:0;
     flex:unset;
@@ -1187,6 +1212,7 @@ body.light-mode .dash-mob-nav{border-bottom-color:rgba(60,80,140,0.08);}
 /* New mobile nav elements — hidden by default on desktop */
 .dash-mob-nav{display:none;}
 .mob-menu-btn{display:none;}
+.mob-theme-btn{display:none;}
 .tab-only{display:none;}
 
 /* Two-column layout */
@@ -1425,6 +1451,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
         Menu
       </button>
       <div style="flex:1"></div>
+      <button class="mob-theme-btn" id="mob-theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
       <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
     </div>
 
@@ -2742,14 +2769,20 @@ async function forceSyncNow() {
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-mode');
   localStorage.setItem('mdps-theme', isLight ? 'light' : 'dark');
-  document.getElementById('theme-toggle-btn').textContent = isLight ? '☀️' : '🌙';
+  const icon = isLight ? '☀️' : '🌙';
+  document.getElementById('theme-toggle-btn').textContent = icon;
+  const mob = document.getElementById('mob-theme-toggle-btn');
+  if(mob) mob.textContent = icon;
 }
 function applyTheme() {
   const t = localStorage.getItem('mdps-theme');
   if(t === 'light') {
     document.body.classList.add('light-mode');
+    const icon = '☀️';
     const btn = document.getElementById('theme-toggle-btn');
-    if(btn) btn.textContent = '☀️';
+    if(btn) btn.textContent = icon;
+    const mob = document.getElementById('mob-theme-toggle-btn');
+    if(mob) mob.textContent = icon;
   }
 }
 
