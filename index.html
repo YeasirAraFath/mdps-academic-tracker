@@ -626,7 +626,7 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
 @media(min-width:641px) and (max-width:1024px){
   .sidebar{position:fixed;left:0;top:0;z-index:100;height:100%;transform:translateX(-110%);transition:transform 0.3s ease;}
   .sidebar.open{transform:translateX(0);}
-  .mobile-menu{display:flex !important;}
+  .tab-only{display:flex !important;}
   .main{max-width:100vw;}
   .dash-layout{grid-template-columns:1fr !important;padding:1.2rem 1.4rem 1.8rem;}
   .dash-greeting{font-size:1.3rem;}
@@ -650,33 +650,101 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   /* ── Dashboard page: no outer padding ── */
   #page-dashboard{padding:0 !important;}
 
-  /* ── Topbar ── */
+  /* ══════════════════════════════════════
+     MOBILE HEADER — 2-row nav structure
+     Row 1: ☰  Dashboard  [＋ Add Task]
+     Row 2: Greeting + date
+  ══════════════════════════════════════ */
+
+  /* Outer topbar: column layout */
   .dash-topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 16px 12px !important;
-    gap:10px;
-    flex-wrap:nowrap;
+    display:flex !important;
+    flex-direction:column !important;
+    padding:0 !important;
+    gap:0;
     border-bottom:1px solid var(--border);
   }
-  .dash-topbar-l{
-    display:flex;flex-direction:column;
-    justify-content:center;
-    flex:1;min-width:0;gap:2px;
-  }
-  .dash-topbar-r{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  .mobile-menu{
+
+  /* ── Row 1: Nav bar ── */
+  .dash-mob-nav{
     display:flex !important;
-    align-items:center;gap:5px;
-    padding:0 12px;
-    height:36px;
-    font-size:13px;font-weight:600;
-    border-radius:8px;
+    align-items:center;
+    gap:0;
+    height:52px;
+    padding:0 12px 0 4px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+
+  /* Hamburger icon button */
+  .mob-ham-btn{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:44px;
+    border-radius:10px;
+    background:none;
+    border:none;
+    color:var(--text2);
+    cursor:pointer;
     flex-shrink:0;
+    transition:background 0.15s, color 0.15s;
+  }
+  .mob-ham-btn:hover,.mob-ham-btn:active{
+    background:rgba(255,255,255,0.07);
+    color:var(--text);
+  }
+
+  /* "Dashboard" title in nav row */
+  .mob-nav-title{
+    display:block !important;
+    flex:1;
+    font-size:16px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:-0.01em;
+    padding-left:4px;
+  }
+
+  /* Add Task btn in nav row (the mob-nav one) */
+  .dash-mob-nav .dash-addtask-btn{
+    display:inline-flex !important;
+    height:34px;
+    padding:0 14px !important;
+    font-size:12px !important;
+    font-weight:700;
+    white-space:nowrap;
+    flex-shrink:0;
+    border-radius:8px;
+  }
+
+  /* Hide the desktop add-task btn and desktop right controls on mobile */
+  .desk-addtask{display:none !important;}
+  .dash-btn-group{display:none !important;}
+  .dash-topbar-r{display:none !important;}
+
+  /* ── Row 2: Greeting section ── */
+  .dash-topbar-l{
+    display:flex !important;
+    flex-direction:row;
+    align-items:center;
+    padding:14px 16px 12px;
+    gap:0;
+    flex:unset;
+    min-width:0;
+    width:100%;
+  }
+  /* Hide tablet-only menu btn on mobile (hamburger is in nav row) */
+  .tab-only{display:none !important;}
+  .dash-greet-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    min-width:0;
+    flex:1;
   }
   .dash-greeting{
-    font-size:18px !important;
+    font-size:22px !important;
     font-weight:700;
     line-height:1.2;
     white-space:nowrap;
@@ -684,26 +752,14 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     text-overflow:ellipsis;
   }
   .dash-subdate{
-    font-size:11px !important;
+    font-size:12px !important;
     color:var(--text3);
     font-family:var(--mono);
+    letter-spacing:0.01em;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
     margin-top:0 !important;
-  }
-  .dash-btn-group{display:none !important;}
-  .dash-addtask-btn{
-    display:inline-flex;
-    align-items:center;
-    gap:4px;
-    height:36px;
-    padding:0 14px !important;
-    font-size:13px !important;
-    font-weight:700;
-    white-space:nowrap;
-    flex-shrink:0;
-    border-radius:9px;
   }
 
   /* ── Alert ── */
@@ -1056,15 +1112,18 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
 
 /* ══ Tiny phones ≤375px ══ */
 @media(max-width:375px){
+  .dash-mob-nav{height:48px;padding:0 8px 0 2px;}
+  .mob-ham-btn{width:40px;height:40px;}
+  .mob-nav-title{font-size:15px;}
+  .dash-mob-nav .dash-addtask-btn{height:30px;padding:0 10px !important;font-size:11px !important;}
+  .dash-topbar-l{padding:12px 14px 10px;}
+  .dash-greeting{font-size:20px !important;}
+  .dash-subdate{font-size:11px !important;}
   .dash-layout{padding:10px 12px 80px !important;}
-  .dash-topbar{padding:12px 12px 10px !important;}
-  .dash-greeting{font-size:16px !important;}
   .nd-title{font-size:15px !important;}
   .nd-counter{width:64px !important;}
   .nd-num{font-size:24px !important;}
-  .tasks-section,.mini-cal-card,.sem-prog-card,.nd-card{
-    padding:12px 12px !important;
-  }
+  .tasks-section,.mini-cal-card,.sem-prog-card,.nd-card{padding:12px 12px !important;}
   .dt-row{padding:10px 4px !important;}
   .dt-name{font-size:13px !important;}
   .dt-check{width:32px !important;height:32px !important;}
@@ -1115,6 +1174,17 @@ body.view-only .export-pdf-btn{display:none!important;}
 body.view-only .dash-addtask-btn{display:none!important;}
 body.light-mode .dash-greeting{color:#0d1526;}
 body.light-mode .dash-topbar{border-bottom-color:rgba(60,80,140,0.12);}
+body.light-mode .mob-ham-btn{color:#4a5872;}
+body.light-mode .mob-ham-btn:hover{background:rgba(61,98,240,0.07);color:#0d1526;}
+body.light-mode .mob-nav-title{color:#0d1526;}
+body.light-mode .dash-mob-nav{border-bottom-color:rgba(60,80,140,0.08);}
+
+/* New mobile nav bar elements — hidden by default on desktop */
+.dash-mob-nav{display:none;}
+.mob-ham-btn{display:none;}
+.mob-nav-title{display:none;}
+.tab-only{display:none;}
+/* Desktop keeps only one add-task btn — the desk-addtask */
 
 /* Two-column layout */
 .dash-layout{display:grid;grid-template-columns:1fr 340px;gap:1.2rem;padding:1.2rem 1.8rem 1.8rem;align-items:start;}
@@ -1340,20 +1410,39 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 
   <!-- Dashboard Top Bar -->
   <div class="dash-topbar">
+
+    <!-- ── Mobile-only nav bar row (hidden on desktop) ── -->
+    <div class="dash-mob-nav">
+      <button class="mob-ham-btn" onclick="toggleSb()" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="2" y1="5"  x2="18" y2="5"/>
+          <line x1="2" y1="10" x2="18" y2="10"/>
+          <line x1="2" y1="15" x2="18" y2="15"/>
+        </svg>
+      </button>
+      <span class="mob-nav-title">Dashboard</span>
+      <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
+    </div>
+
+    <!-- ── Greeting section (shows on desktop as left block, below nav on mobile) ── -->
     <div class="dash-topbar-l">
-      <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
-      <div>
+      <!-- Tablet-only menu button (641–1024px) -->
+      <button class="mobile-menu tab-only" onclick="toggleSb()">☰ Menu</button>
+      <div class="dash-greet-wrap">
         <h2 class="dash-greeting" id="dash-greet">Good evening 🌙</h2>
         <p class="dash-subdate" id="dash-date"></p>
       </div>
     </div>
+
+    <!-- ── Desktop-only right controls ── -->
     <div class="dash-topbar-r">
       <div class="dash-btn-group">
         <button class="export-pdf-btn" onclick="exportToPDF()" title="Export PDF">📄 PDF</button>
         <button class="export-pdf-btn" onclick="openTeacherAdd()">👤 Teacher</button>
       </div>
-      <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
+      <button class="dash-addtask-btn desk-addtask" onclick="openAddEvent()">＋ Add Task</button>
     </div>
+
   </div>
 
   <div class="alert" id="dash-alert"><div style="font-size:1.1rem">⏰</div><div><strong id="alert-t"></strong><br><span id="alert-s"></span></div></div>
