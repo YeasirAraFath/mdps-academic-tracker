@@ -669,44 +669,47 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   .dash-mob-nav{
     display:flex !important;
     align-items:center;
-    gap:0;
-    height:52px;
-    padding:0 12px 0 4px;
-    border-bottom:1px solid rgba(255,255,255,0.04);
+    height:48px;
+    padding:0 14px;
+    gap:8px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
   }
 
-  /* Hamburger icon button */
-  .mob-ham-btn{
-    display:flex !important;
+  /* ☰ Menu button — left aligned, icon + label */
+  .mob-menu-btn{
+    display:inline-flex !important;
     align-items:center;
-    justify-content:center;
-    width:44px;
-    height:44px;
-    border-radius:10px;
-    background:none;
-    border:none;
+    gap:7px;
+    height:36px;
+    padding:0 12px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    border-radius:9px;
     color:var(--text2);
+    font-family:var(--font);
+    font-size:13px;
+    font-weight:600;
     cursor:pointer;
     flex-shrink:0;
-    transition:background 0.15s, color 0.15s;
+    transition:background 0.15s, color 0.15s, border-color 0.15s;
   }
-  .mob-ham-btn:hover,.mob-ham-btn:active{
-    background:rgba(255,255,255,0.07);
-    color:var(--text);
+  .mob-menu-btn:hover,.mob-menu-btn:active{
+    background:rgba(79,124,255,0.12);
+    border-color:rgba(79,124,255,0.3);
+    color:var(--blue2);
+  }
+  body.light-mode .mob-menu-btn{
+    background:#ffffff;
+    border-color:rgba(60,80,140,0.16);
+    color:#4a5872;
+  }
+  body.light-mode .mob-menu-btn:hover{
+    background:rgba(61,98,240,0.07);
+    border-color:rgba(61,98,240,0.25);
+    color:#0d1526;
   }
 
-  /* "Dashboard" title in nav row */
-  .mob-nav-title{
-    display:block !important;
-    flex:1;
-    font-size:16px;
-    font-weight:700;
-    color:var(--text);
-    letter-spacing:-0.01em;
-    padding-left:4px;
-  }
-
-  /* Add Task btn in nav row (the mob-nav one) */
+  /* Add Task btn in nav row */
   .dash-mob-nav .dash-addtask-btn{
     display:inline-flex !important;
     height:34px;
@@ -1112,9 +1115,8 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
 
 /* ══ Tiny phones ≤375px ══ */
 @media(max-width:375px){
-  .dash-mob-nav{height:48px;padding:0 8px 0 2px;}
-  .mob-ham-btn{width:40px;height:40px;}
-  .mob-nav-title{font-size:15px;}
+  .dash-mob-nav{height:44px;padding:0 10px;}
+  .mob-menu-btn{height:32px;padding:0 10px;font-size:12px;}
   .dash-mob-nav .dash-addtask-btn{height:30px;padding:0 10px !important;font-size:11px !important;}
   .dash-topbar-l{padding:12px 14px 10px;}
   .dash-greeting{font-size:20px !important;}
@@ -1179,12 +1181,10 @@ body.light-mode .mob-ham-btn:hover{background:rgba(61,98,240,0.07);color:#0d1526
 body.light-mode .mob-nav-title{color:#0d1526;}
 body.light-mode .dash-mob-nav{border-bottom-color:rgba(60,80,140,0.08);}
 
-/* New mobile nav bar elements — hidden by default on desktop */
+/* New mobile nav elements — hidden by default on desktop */
 .dash-mob-nav{display:none;}
-.mob-ham-btn{display:none;}
-.mob-nav-title{display:none;}
+.mob-menu-btn{display:none;}
 .tab-only{display:none;}
-/* Desktop keeps only one add-task btn — the desk-addtask */
 
 /* Two-column layout */
 .dash-layout{display:grid;grid-template-columns:1fr 340px;gap:1.2rem;padding:1.2rem 1.8rem 1.8rem;align-items:start;}
@@ -1413,14 +1413,15 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
 
     <!-- ── Mobile-only nav bar row (hidden on desktop) ── -->
     <div class="dash-mob-nav">
-      <button class="mob-ham-btn" onclick="toggleSb()" aria-label="Open menu">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <button class="mob-menu-btn" onclick="toggleSb()" aria-label="Open menu">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <line x1="2" y1="5"  x2="18" y2="5"/>
           <line x1="2" y1="10" x2="18" y2="10"/>
           <line x1="2" y1="15" x2="18" y2="15"/>
         </svg>
+        Menu
       </button>
-      <span class="mob-nav-title">Dashboard</span>
+      <div style="flex:1"></div>
       <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
     </div>
 
