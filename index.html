@@ -583,9 +583,9 @@ body.owner-mode .owner-badge{display:flex;}
 .sch-teacher{font-size:0.6rem;color:var(--text3);}
 
 /* MODALS */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;overscroll-behavior:contain;}
 .overlay.open{display:flex;}
-.modal{background:var(--card2);border:1px solid var(--border2);border-radius:18px;padding:1.6rem 1.8rem;width:100%;max-width:620px;box-shadow:0 24px 64px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto;}
+.modal{background:var(--card2);border:1px solid var(--border2);border-radius:18px;padding:1.6rem 1.8rem;width:100%;max-width:620px;box-shadow:0 24px 64px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 .modal h3{font-size:1rem;font-weight:700;margin-bottom:1.2rem;}
 .frow{margin-bottom:0.9rem;}
 .frow label{display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:0.3rem;}
@@ -653,8 +653,8 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   /* ══════════════════════════════════════
      MOBILE HEADER — clean 2-row layout
      Row 1: [☰ Menu]  ·········  [🌙]
-     Row 2: Good night 🌌
-             Friday, March 13 · 8:54 PM
+     Row 2: Good evening 🌙
+             Friday, March 13 · 8:56 PM
   ══════════════════════════════════════ */
 
   /* Outer topbar: stacked column */
@@ -666,7 +666,7 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     border-bottom:1px solid var(--border);
   }
 
-  /* Row 1: icon bar — Menu left, theme right */
+  /* Row 1: icon bar — Menu left, theme right, space-between */
   .dash-mob-nav{
     display:flex !important;
     align-items:center;
@@ -752,7 +752,7 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     width:100%;
   }
 
-  /* Hide tablet-only menu btn — hamburger is in row 1 */
+  /* Hide tablet-only menu btn */
   .tab-only{display:none !important;}
 
   .dash-greet-wrap{
@@ -1089,7 +1089,7 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   .topbar{padding:14px 16px 0 !important;margin-bottom:14px;}
   .topbar-l h2{font-size:18px !important;font-weight:700;}
   .topbar-l p{font-size:12px !important;}
-  .topbar-r{flex-wrap:wrap;gap:8px;}
+  .topbar-r{flex-wrap:wrap;gap:8px;width:100%;justify-content:flex-end !important;}
   .topbar-r .btn{height:36px;font-size:13px;}
 
   /* Stats grid: 2×2 */
@@ -1109,7 +1109,21 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   .eacts{gap:6px;flex-wrap:wrap;}
 
   /* Schedule page */
-  .schedule-row{grid-template-columns:56px 1fr !important;}
+  .schedule-row{
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+    padding:10px 0 !important;
+  }
+  .sch-day{
+    font-size:11px !important;
+    padding:3px 10px;
+    background:rgba(79,124,255,0.1);
+    border-radius:6px;
+    display:inline-block;
+    width:fit-content;
+  }
+  /* Hide the time-range header row on mobile */
+  #page-schedule .topbar ~ div > div[style*="grid-template-columns"]{display:none !important;}
 
   /* Section headers */
   .shdr h3{font-size:15px !important;}
@@ -1132,10 +1146,10 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
 
 /* ══ Tiny phones ≤375px ══ */
 @media(max-width:375px){
-  .dash-mob-nav{height:48px;padding:0 12px;}
-  .mob-menu-btn{height:36px;padding:0 11px;font-size:12px;}
-  .mob-theme-btn{width:36px;height:36px;font-size:0.95rem;}
-  .dash-topbar-l{padding:6px 12px 12px;}
+  .dash-mob-nav{height:44px;padding:0 10px;}
+  .mob-menu-btn{height:32px;padding:0 10px;font-size:12px;}
+  .dash-mob-nav .dash-addtask-btn{height:30px;padding:0 10px !important;font-size:11px !important;}
+  .dash-topbar-l{padding:12px 14px 10px;}
   .dash-greeting{font-size:20px !important;}
   .dash-subdate{font-size:11px !important;}
   .dash-layout{padding:10px 12px 80px !important;}
@@ -1147,6 +1161,8 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   .dt-name{font-size:13px !important;}
   .dt-check{width:32px !important;height:32px !important;}
   .nd-btn:nth-child(2),.nd-btn:nth-child(3){width:100% !important;}
+  /* Type buttons: 2x2 grid on tiny screens */
+  .type-row{grid-template-columns:1fr 1fr !important;gap:6px !important;}
 }
 
 /* ── FLOATING ACTION BUTTON ── */
@@ -1201,7 +1217,6 @@ body.light-mode .dash-mob-nav{border-bottom-color:rgba(60,80,140,0.08);}
 /* New mobile nav elements — hidden by default on desktop */
 .dash-mob-nav{display:none;}
 .mob-menu-btn{display:none;}
-.mob-theme-btn{display:none;}
 .tab-only{display:none;}
 
 /* Two-column layout */
@@ -1440,7 +1455,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
         Menu
       </button>
       <div style="flex:1"></div>
-      <button class="mob-theme-btn" id="mob-theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
+      <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
     </div>
 
     <!-- ── Greeting section (shows on desktop as left block, below nav on mobile) ── -->
@@ -1924,7 +1939,7 @@ function go(page, filter) {
   if(page==='calendar') renderCal();
   if(page==='courses') renderCourses();
   if(page==='teachers') renderTeachers();
-  if(page==='students') renderStudents();
+  if(page==='students') { /* no students page */ }
   if(page==='studyfiles') renderSF();
 }
 
@@ -1945,9 +1960,17 @@ function closeSb() {
 }
 
 // GREETING + LIVE CLOCK
+let _lastGreetMin = -1;
 function updateGreeting() {
   const now = new Date();
-  const h = now.getHours();
+  const h = now.getHours(), m = now.getMinutes();
+  // Update just the time span every second
+  const timeEl = document.getElementById('dash-time-span');
+  const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  if(timeEl) { timeEl.textContent = timePart; }
+  // Full rebuild only once per minute or on first call
+  if(m === _lastGreetMin && timeEl) return;
+  _lastGreetMin = m;
   const word = h<5?'Good night 🌃':h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':h<21?'Good evening 🌙':'Good night 🌌';
   const name = DB.settings.name || 'there';
   const greetEl = document.getElementById('dash-greet');
@@ -1960,8 +1983,7 @@ function updateGreeting() {
   }
   if(dateEl) {
     const datePart = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    const timePart = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
-    dateEl.innerHTML = `${datePart} &nbsp;·&nbsp; <span style="font-family:var(--mono);color:var(--blue2)">${timePart}</span>`;
+    dateEl.innerHTML = `${datePart} &nbsp;·&nbsp; <span id="dash-time-span" style="font-family:var(--mono);color:var(--blue2)">${timePart}</span>`;
   }
 }
 updateGreeting();
@@ -2045,7 +2067,7 @@ function renderKPI() {
             const dColor = d<=2 ? 'var(--red)' : d<=7 ? 'var(--amber)' : 'var(--green)';
             const bgAlpha = i===0 ? '0.07' : '0.03';
             const borderAlpha = i===0 ? '0.22' : '0.1';
-            return `<div onclick="event.stopPropagation();openEditEvent(${e.id})" style="
+            return `<div onclick="event.stopPropagation();openDetail(${e.id})" style="
                 display:flex;align-items:center;gap:0.65rem;
                 padding:0.55rem 0.7rem;border-radius:9px;
                 background:rgba(79,124,255,${bgAlpha});
@@ -2218,8 +2240,11 @@ function renderProgress() {
       </div>`;
     }).join('')}`;
 
-  // Animate bars
-  setTimeout(()=>{ document.querySelectorAll('[data-w]').forEach(el=>{ el.style.width=el.dataset.w; }); }, 300);
+  // Animate bars — scoped to avoid racing with other widgets
+  setTimeout(()=>{
+    document.getElementById('prog-card')?.querySelectorAll('[data-w]').forEach(el=>{ el.style.width=el.dataset.w; });
+    document.getElementById('prog-breakdown')?.querySelectorAll('[data-w]').forEach(el=>{ el.style.width=el.dataset.w; });
+  }, 300);
 }
 
 function renderSemOverview() {
@@ -2292,7 +2317,8 @@ function renderMiniCal() {
   for(let i=0;i<firstDay;i++) cells += `<div class="mc-day mc-empty"></div>`;
   for(let d=1;d<=daysInMonth;d++){
     const ds = `${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = ds === now.toISOString().slice(0,10);
+    const localToday = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const isToday = ds === localToday;
     const evs = evDates[ds]||[];
     const dotColor = evs.length>0 ? (TC[evs[0].type]||'var(--blue)') : null;
     cells += `<div class="mc-day${isToday?' mc-today':''}${evs.length?' mc-hasevent':''}" title="${evs.map(e=>e.title).join(', ')}" onclick="${evs.length?`openEditEvent(${evs[0].id})`:''}">
@@ -2417,7 +2443,14 @@ function deleteEvent(id) {
 }
 function refresh() {
   const page = document.querySelector('.page.active')?.id.replace('page-','');
-  if(page) go(page);
+  if(!page) return;
+  if(page==='dashboard') renderDash();
+  else if(page==='events') renderEvents();
+  else if(page==='calendar') renderCal();
+  else if(page==='courses') renderCourses();
+  else if(page==='teachers') renderTeachers();
+  else if(page==='studyfiles') renderSF();
+  updateNavCounts();
 }
 
 // ALL EVENTS PAGE
@@ -2488,7 +2521,9 @@ function buildCalMonth(d) {
     const isWk=dow===5||dow===6;
     const cls=(isTod?'today ':''+(isWk?'weekend ':''))+(evsByDay[day]?'has-events ':'');
     const dots=(evsByDay[day]||[]).slice(0,3).map(e=>`<div class="cdotevent de-${e.type}">${e.title.slice(0,10)}</div>`).join('');
-    cells+=`<div class="ccell ${cls}" onclick=""><div class="cnum">${day}</div><div class="cdot-row">${dots}</div></div>`;
+    const dayEvs = evsByDay[day];
+    const clickHandler = dayEvs && dayEvs.length > 0 ? `openEditEvent(${dayEvs[0].id})` : '';
+    cells+=`<div class="ccell ${cls}" onclick="${clickHandler}" style="${clickHandler?'cursor:pointer':''}"><div class="cnum">${day}</div><div class="cdot-row">${dots}</div></div>`;
   }
   return `<div class="cal-block"><div class="cal-mhdr"><h4>${mn}</h4></div><div class="cal-grid">${dayLabels.map(l=>`<div class="cdlabel">${l}</div>`).join('')}${cells}</div></div>`;
 }
@@ -2590,12 +2625,15 @@ function saveEvModal() {
   const title = document.getElementById('ev-title').value.trim();
   const date  = document.getElementById('ev-date').value;
   if(!title||!date) return alert('Title and date required.');
+  const existing = editEvId ? DB.events.find(x=>x.id===editEvId) : null;
   const ev = { id:editEvId||_nextId(), type:selEvType, title, date,
     course:document.getElementById('ev-course').value,
     teacher:document.getElementById('ev-teacher').value,
     semester:+document.getElementById('ev-semester').value,
     startTime: selEvType==='class' ? (()=>{ const h=document.getElementById('ev-time-hour').value; const m=document.getElementById('ev-time-min').value; const ap=document.getElementById('ev-time-ampm').value; return (h&&m)?`${h}:${m} ${ap}`:''; })() : '',
-    notes:document.getElementById('ev-notes').value.trim(), done:false };
+    notes:document.getElementById('ev-notes').value.trim(),
+    done: existing ? existing.done : false,
+    links: existing ? (existing.links||[]) : [] };
   if(editEvId) { const i=DB.events.findIndex(x=>x.id===editEvId); DB.events[i]=ev; }
   else DB.events.push(ev);
   persist(); closeEvModal(); refresh();
@@ -3037,7 +3075,7 @@ async function tryLoadPublicData() {
 }
 function copyShareUrl() {
   const url = localStorage.getItem('mdps-share-url');
-  if(!url || !gDriveUser) return;
+  if(!url) return;
   navigator.clipboard.writeText(url).then(() => {
     const el = document.getElementById('gdrive-status');
     const prev = el.textContent;
