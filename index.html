@@ -651,12 +651,13 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   #page-dashboard{padding:0 !important;}
 
   /* ══════════════════════════════════════
-     MOBILE HEADER — 2-row nav structure
-     Row 1: ☰  Dashboard  [＋ Add Task]
-     Row 2: Greeting + date
+     MOBILE HEADER — clean 2-row layout
+     Row 1: [☰ Menu]  ·········  [🌙]
+     Row 2: Good night 🌌
+             Friday, March 13 · 8:54 PM
   ══════════════════════════════════════ */
 
-  /* Outer topbar: column layout */
+  /* Outer topbar: stacked column */
   .dash-topbar{
     display:flex !important;
     flex-direction:column !important;
@@ -665,119 +666,107 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     border-bottom:1px solid var(--border);
   }
 
-  /* ── Row 1: Nav bar ── */
+  /* Row 1: icon bar — Menu left, theme right */
   .dash-mob-nav{
     display:flex !important;
     align-items:center;
-    height:48px;
-    padding:0 14px;
+    justify-content:space-between;
+    height:52px;
+    padding:0 16px;
     gap:8px;
-    border-bottom:1px solid rgba(255,255,255,0.05);
   }
 
-  /* ☰ Menu button — left aligned, icon + label */
+  /* Menu button — left */
   .mob-menu-btn{
     display:inline-flex !important;
     align-items:center;
     gap:7px;
-    height:36px;
-    padding:0 12px;
+    height:40px;
+    padding:0 14px;
     background:rgba(255,255,255,0.05);
     border:1px solid var(--border);
-    border-radius:9px;
+    border-radius:10px;
     color:var(--text2);
     font-family:var(--font);
     font-size:13px;
     font-weight:600;
     cursor:pointer;
     flex-shrink:0;
-    transition:background 0.15s, color 0.15s, border-color 0.15s;
+    transition:background 0.15s,color 0.15s,border-color 0.15s;
+    -webkit-tap-highlight-color:transparent;
   }
-  .mob-menu-btn:hover,.mob-menu-btn:active{
-    background:rgba(79,124,255,0.12);
-    border-color:rgba(79,124,255,0.3);
+  .mob-menu-btn:active{
+    background:rgba(79,124,255,0.15);
+    border-color:rgba(79,124,255,0.35);
     color:var(--blue2);
-  }
-
-  /* 🌙 Theme toggle in mobile nav row */
-  .mob-theme-btn{
-    display:inline-flex !important;
-    align-items:center;
-    justify-content:center;
-    width:36px;
-    height:36px;
-    flex-shrink:0;
-    background:rgba(255,255,255,0.05);
-    border:1px solid var(--border);
-    border-radius:9px;
-    font-size:1rem;
-    cursor:pointer;
-    transition:background 0.15s, border-color 0.15s;
-  }
-  .mob-theme-btn:hover,.mob-theme-btn:active{
-    background:rgba(79,124,255,0.12);
-    border-color:rgba(79,124,255,0.3);
-  }
-  body.light-mode .mob-theme-btn{
-    background:#ffffff;
-    border-color:rgba(60,80,140,0.16);
-  }
-  body.light-mode .mob-theme-btn:hover{
-    background:rgba(61,98,240,0.07);
-    border-color:rgba(61,98,240,0.25);
   }
   body.light-mode .mob-menu-btn{
     background:#ffffff;
     border-color:rgba(60,80,140,0.16);
     color:#4a5872;
   }
-  body.light-mode .mob-menu-btn:hover{
-    background:rgba(61,98,240,0.07);
-    border-color:rgba(61,98,240,0.25);
-    color:#0d1526;
-  }
 
-  /* Add Task btn in nav row */
-  .dash-mob-nav .dash-addtask-btn{
+  /* Theme toggle — right */
+  .mob-theme-btn{
     display:inline-flex !important;
-    height:34px;
-    padding:0 14px !important;
-    font-size:12px !important;
-    font-weight:700;
-    white-space:nowrap;
+    align-items:center;
+    justify-content:center;
+    width:40px;
+    height:40px;
     flex-shrink:0;
-    border-radius:8px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:1.05rem;
+    cursor:pointer;
+    transition:background 0.15s,border-color 0.15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mob-theme-btn:active{
+    background:rgba(79,124,255,0.15);
+    border-color:rgba(79,124,255,0.35);
+  }
+  body.light-mode .mob-theme-btn{
+    background:#ffffff;
+    border-color:rgba(60,80,140,0.16);
   }
 
-  /* Hide the desktop add-task btn and desktop right controls on mobile */
+  /* Hide Add Task from nav row — FAB handles it on mobile */
+  .dash-mob-nav .dash-addtask-btn{display:none !important;}
+
+  /* Hide all desktop-only controls */
   .desk-addtask{display:none !important;}
   .dash-btn-group{display:none !important;}
   .dash-topbar-r{display:none !important;}
 
-  /* ── Row 2: Greeting section ── */
+  /* Row 2: greeting block — stacked left-aligned text */
   .dash-topbar-l{
     display:flex !important;
-    flex-direction:row;
-    align-items:center;
-    padding:14px 16px 12px;
+    flex-direction:column !important;
+    align-items:flex-start;
+    justify-content:flex-start;
+    padding:8px 16px 14px;
     gap:0;
     flex:unset;
     min-width:0;
     width:100%;
   }
-  /* Hide tablet-only menu btn on mobile (hamburger is in nav row) */
+
+  /* Hide tablet-only menu btn — hamburger is in row 1 */
   .tab-only{display:none !important;}
+
   .dash-greet-wrap{
     display:flex;
     flex-direction:column;
-    gap:3px;
+    gap:4px;
     min-width:0;
-    flex:1;
+    width:100%;
   }
   .dash-greeting{
-    font-size:22px !important;
+    font-size:24px !important;
     font-weight:700;
     line-height:1.2;
+    letter-spacing:-0.02em;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -786,7 +775,7 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
     font-size:12px !important;
     color:var(--text3);
     font-family:var(--mono);
-    letter-spacing:0.01em;
+    letter-spacing:0.02em;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -1143,10 +1132,10 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
 
 /* ══ Tiny phones ≤375px ══ */
 @media(max-width:375px){
-  .dash-mob-nav{height:44px;padding:0 10px;}
-  .mob-menu-btn{height:32px;padding:0 10px;font-size:12px;}
-  .dash-mob-nav .dash-addtask-btn{height:30px;padding:0 10px !important;font-size:11px !important;}
-  .dash-topbar-l{padding:12px 14px 10px;}
+  .dash-mob-nav{height:48px;padding:0 12px;}
+  .mob-menu-btn{height:36px;padding:0 11px;font-size:12px;}
+  .mob-theme-btn{width:36px;height:36px;font-size:0.95rem;}
+  .dash-topbar-l{padding:6px 12px 12px;}
   .dash-greeting{font-size:20px !important;}
   .dash-subdate{font-size:11px !important;}
   .dash-layout{padding:10px 12px 80px !important;}
@@ -1452,7 +1441,6 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
       </button>
       <div style="flex:1"></div>
       <button class="mob-theme-btn" id="mob-theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
-      <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
     </div>
 
     <!-- ── Greeting section (shows on desktop as left block, below nav on mobile) ── -->
