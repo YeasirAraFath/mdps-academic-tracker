@@ -2790,5 +2790,88 @@ window.addEventListener('load', ()=>{
 
 <!-- Floating Quick-Add Button -->
 <button class="fab" onclick="openAddEvent()" title="Quick add event">＋</button>
+
+<!-- ══ NOTICE POPUP ══ -->
+<div id="notice-overlay" style="
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+  animation:noticeIn 0.25s ease;
+">
+  <div style="
+    background:linear-gradient(145deg,#0f1424,#131829);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px;
+    padding:2rem 2rem 1.6rem;
+    max-width:460px;width:100%;
+    box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(99,102,241,0.2);
+    position:relative;
+    animation:noticeSlide 0.3s cubic-bezier(.22,.97,.5,1.2) both;
+  ">
+    <!-- Icon + Title -->
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.1rem;">
+      <div style="
+        width:44px;height:44px;border-radius:12px;flex-shrink:0;
+        background:linear-gradient(135deg,rgba(245,166,35,0.2),rgba(239,68,68,0.15));
+        border:1px solid rgba(245,166,35,0.35);
+        display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+      ">⚠️</div>
+      <div>
+        <div style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:-0.01em;">Important Notice</div>
+        <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);margin-top:1px;font-family:'JetBrains Mono',monospace;">MDPS Academic Tracker · Khulna University</div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:1px;background:linear-gradient(90deg,rgba(245,166,35,0.4),rgba(99,102,241,0.2),transparent);margin-bottom:1.1rem;"></div>
+
+    <!-- Message -->
+    <p style="
+      font-size:0.88rem;line-height:1.75;color:rgba(221,228,240,0.9);
+      margin-bottom:0.6rem;
+    ">
+      This website <strong style="color:#fff;">does not provide official updates.</strong><br>
+      Please follow the
+      <span style="
+        display:inline-flex;align-items:center;gap:0.3rem;
+        background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.3);
+        color:#25d366;font-weight:700;font-size:0.82rem;
+        padding:0.1rem 0.5rem;border-radius:6px;vertical-align:middle;
+      ">💬 WhatsApp Update Section</span>
+      for the latest official information.
+    </p>
+
+    <!-- Footer note -->
+    <div style="font-size:0.68rem;color:rgba(255,255,255,0.28);margin-bottom:1.4rem;line-height:1.5;">
+      This tracker is a personal academic tool only. All official communications are shared via WhatsApp.
+    </div>
+
+    <!-- Close button -->
+    <button onclick="document.getElementById('notice-overlay').style.display='none'" style="
+      width:100%;padding:0.7rem 1rem;
+      background:linear-gradient(135deg,#4f7cff,#6366f1);
+      color:#fff;font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:0.85rem;font-weight:700;letter-spacing:0.02em;
+      border:none;border-radius:10px;cursor:pointer;
+      box-shadow:0 4px 18px rgba(79,124,255,0.35);
+      transition:all 0.15s;
+    "
+    onmouseover="this.style.opacity='0.88'"
+    onmouseout="this.style.opacity='1'"
+    >
+      ✓ &nbsp;I Understand — Close
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes noticeIn{from{opacity:0}to{opacity:1}}
+@keyframes noticeSlide{from{opacity:0;transform:translateY(18px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:480px){
+  #notice-overlay > div{padding:1.4rem 1.2rem 1.2rem!important;border-radius:16px!important;}
+}
+</style>
 </body>
 </html>
