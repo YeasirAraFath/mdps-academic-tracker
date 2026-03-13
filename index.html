@@ -906,7 +906,6 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
   <div class="dash-topbar">
     <div class="dash-topbar-l">
       <button class="mobile-menu" onclick="toggleSb()">☰ Menu</button>
-      <div class="dash-avatar" id="dash-av">AF</div>
       <div>
         <h2 class="dash-greeting" id="dash-greet">Good evening 🌙</h2>
         <p class="dash-subdate" id="dash-date"></p>
@@ -1410,7 +1409,7 @@ function updateGreeting() {
   const greetEl = document.getElementById('dash-greet');
   const dateEl = document.getElementById('dash-date');
   const avEl = document.getElementById('dash-av');
-  if(greetEl) greetEl.innerHTML = `${word}, <span style="color:var(--blue2)">${name.split(' ')[0]}</span>`;
+  if(greetEl) greetEl.innerHTML = word;
   if(avEl) {
     const parts = name.split(' ');
     avEl.textContent = parts.length>1?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():(name.slice(0,2).toUpperCase());
