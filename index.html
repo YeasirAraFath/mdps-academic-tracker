@@ -639,117 +639,252 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
 
   /* Topbar */
   .dash-topbar{
-    padding:0.9rem 1rem 0.75rem !important;
+    padding:0.85rem 0.85rem 0.7rem !important;
     gap:0.5rem;
     flex-wrap:nowrap;
+    align-items:center;
   }
-  .dash-topbar-l{flex:1;min-width:0;gap:0.5rem;}
+  .dash-topbar-l{flex:1;min-width:0;gap:0.5rem;align-items:center;}
   .dash-topbar-r{flex-shrink:0;gap:0.4rem;}
-  .dash-greeting{font-size:1.15rem !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .dash-subdate{font-size:0.68rem !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .mobile-menu{display:flex !important;padding:0 0.6rem;height:32px;font-size:0.72rem;}
+  .dash-greeting{
+    font-size:1.05rem !important;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    line-height:1.25;
+  }
+  /* Show only time on mobile — date is too long */
+  .dash-subdate{
+    font-size:0.62rem !important;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:220px;
+  }
+  .mobile-menu{
+    display:flex !important;
+    padding:0 0.55rem;
+    height:30px;
+    font-size:0.7rem;
+    flex-shrink:0;
+  }
 
-  /* Hide PDF/Teacher buttons on mobile, keep Add Task */
+  /* Hide PDF/Teacher buttons on mobile */
   .dash-btn-group{display:none !important;}
-  .dash-addtask-btn{padding:0.38rem 0.85rem;font-size:0.72rem;}
+  .dash-addtask-btn{
+    padding:0.35rem 0.75rem;
+    font-size:0.7rem;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
 
-  /* Alert */
-  .alert{font-size:0.75rem;padding:0.6rem 0.75rem;margin:0 0 0.75rem;}
+  /* Alert — match horizontal padding of dash-layout */
+  .alert{
+    font-size:0.74rem;
+    padding:0.55rem 0.75rem;
+    margin:0 0.85rem 0.75rem !important;
+    border-radius:8px;
+  }
 
   /* Next Deadline Card */
-  .nd-card{padding:1rem 1.1rem !important;border-radius:14px;}
+  .nd-card{
+    padding:1rem 1rem !important;
+    border-radius:14px;
+  }
   .nd-card::before{border-radius:14px 14px 0 0;}
-  .nd-hdr{margin-bottom:0.75rem;}
-  .nd-inner{flex-direction:column;gap:0.8rem;}
-  .nd-title{font-size:0.97rem !important;line-height:1.4;}
-  .nd-meta-row{gap:0.4rem;margin-top:0.4rem;}
-  .nd-meta-tag{font-size:0.6rem;padding:0.15rem 0.45rem;}
-  .nd-btns{flex-wrap:wrap;gap:0.4rem;margin-top:0.8rem;}
-  .nd-btn{padding:0.38rem 0.85rem;font-size:0.68rem;}
+  .nd-hdr{margin-bottom:0.7rem;}
+  .nd-label{font-size:0.6rem;}
+  .nd-inner{
+    flex-direction:column;
+    gap:0;
+  }
+  .nd-title{
+    font-size:0.95rem !important;
+    line-height:1.4;
+    margin-bottom:0.4rem;
+  }
+  .nd-meta-row{
+    gap:0.3rem;
+    margin-top:0.35rem;
+    flex-wrap:wrap !important;
+  }
+  .nd-meta-tag{
+    font-size:0.58rem;
+    padding:0.12rem 0.4rem;
+    white-space:nowrap;
+  }
+  .nd-btns{
+    flex-wrap:wrap;
+    gap:0.35rem;
+    margin-top:0.75rem;
+  }
+  .nd-btn{
+    padding:0.35rem 0.75rem;
+    font-size:0.66rem;
+    flex:1;
+    min-width:0;
+    text-align:center;
+    justify-content:center;
+  }
+  /* Counter: compact strip at bottom */
   .nd-counter{
-    display:flex;align-items:center;gap:0.9rem;
+    display:flex;
+    align-items:center;
+    gap:0.7rem;
     text-align:left;
     background:rgba(255,255,255,0.04);
     border:1px solid var(--border);
     border-radius:10px;
-    padding:0.6rem 0.9rem;
+    padding:0.55rem 0.85rem;
     width:100%;
+    margin-top:0.9rem;
+    min-width:unset;
   }
-  .nd-num{font-size:2rem !important;}
-  .nd-unit{font-size:0.62rem;margin-top:0;}
-  .nd-unit2{margin-top:0;}
+  .nd-num{font-size:1.85rem !important;line-height:1;}
+  .nd-unit{font-size:0.6rem;margin-top:0;line-height:1.3;}
+  .nd-unit2{margin-top:0;line-height:1.3;}
 
   /* Tasks Section */
-  .tasks-section{padding:1rem 1rem !important;border-radius:14px;}
-  .tasks-sec-hdr{gap:0.4rem;margin-bottom:0.75rem;flex-wrap:nowrap;}
-  .tasks-sec-title{font-size:0.85rem !important;}
-  .sec-tabs{margin-left:0.3rem !important;}
-  .sec-tab{padding:0.2rem 0.55rem;font-size:0.65rem;}
+  .tasks-section{
+    padding:0.9rem 0.9rem !important;
+    border-radius:14px;
+  }
+  .tasks-sec-hdr{
+    gap:0.35rem;
+    margin-bottom:0.7rem;
+    flex-wrap:nowrap;
+    align-items:center;
+  }
+  .tasks-sec-title{font-size:0.82rem !important;}
+  .sec-tabs{margin-left:0.25rem !important;}
+  .sec-tab{padding:0.18rem 0.5rem;font-size:0.63rem;}
+  /* Count pill: don't let it push other items */
+  #week-c{
+    max-width:52px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:0.58rem !important;
+    padding:0.08rem 0.4rem !important;
+  }
 
-  /* Course filter pills — horizontal scroll */
+  /* Course filter pills — horizontal scroll, no wrap */
   .wn-course-filter{
     flex-wrap:nowrap !important;
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
-    padding-bottom:0.25rem;
+    padding-bottom:0.2rem;
     gap:0.3rem;
     scrollbar-width:none;
+    margin-bottom:0.6rem;
   }
   .wn-course-filter::-webkit-scrollbar{display:none;}
-  .cf-pill{white-space:nowrap;flex-shrink:0;font-size:0.62rem;padding:0.15rem 0.5rem;}
-
-  /* Date group labels */
-  .dt-group-label{padding:0.5rem 0.3rem 0.35rem;}
-  .dt-group-date{font-size:0.6rem;}
-
-  /* Task rows */
-  .dt-row{
-    grid-template-columns:7px 1fr auto 26px !important;
-    gap:0.5rem !important;
-    padding:0.65rem 0.35rem !important;
+  .cf-pill{
+    white-space:nowrap;
+    flex-shrink:0;
+    font-size:0.6rem;
+    padding:0.13rem 0.45rem;
   }
-  .dt-name{font-size:0.78rem !important;}
-  .dt-badge{font-size:0.52rem;padding:0.1rem 0.35rem;}
-  .dt-teacher{font-size:0.6rem;}
-  .dt-due{font-size:0.65rem !important;}
-  .dt-check{width:22px;height:22px;font-size:0.65rem;}
 
-  /* Modal on mobile — bottom sheet style */
+  /* Date group headers */
+  .dt-group-label{padding:0.5rem 0.2rem 0.3rem;}
+  .dt-group-date{font-size:0.58rem;}
+  .dt-group-count{font-size:0.56rem;padding:0.03rem 0.38rem;}
+
+  /* Task rows — fixed columns, no overflow */
+  .dt-row{
+    grid-template-columns:7px 1fr auto 24px !important;
+    gap:0.45rem !important;
+    padding:0.6rem 0.25rem !important;
+    align-items:start;
+  }
+  .dt-dot{margin-top:4px;}
+  .dt-name{
+    font-size:0.77rem !important;
+    white-space:normal;
+    word-break:break-word;
+    line-height:1.35;
+  }
+  .dt-badge{font-size:0.5rem;padding:0.1rem 0.32rem;letter-spacing:0.04em;}
+  .dt-teacher{
+    font-size:0.58rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:130px;
+  }
+  .dt-due{
+    font-size:0.63rem !important;
+    white-space:nowrap;
+    padding-top:2px;
+  }
+  .dt-check{
+    width:22px;
+    height:22px;
+    font-size:0.62rem;
+    margin-top:2px;
+  }
+
+  /* Modal — bottom sheet with iOS safe area */
   .overlay{align-items:flex-end !important;padding:0 !important;}
   .modal{
     max-width:100% !important;
     width:100% !important;
     border-radius:20px 20px 0 0 !important;
-    max-height:92vh !important;
-    padding:1.3rem 1.2rem 2rem !important;
+    max-height:93vh !important;
+    padding:1.2rem 1rem calc(1.5rem + env(safe-area-inset-bottom,0px)) !important;
   }
-  .modal h3{font-size:0.92rem;}
-  .type-row{grid-template-columns:1fr 1fr 1fr 1fr;gap:0.3rem;}
-  .type-btn{font-size:0.62rem;padding:0.4rem 0.2rem;}
-  .fbtns{gap:0.45rem;}
-  .finput{font-size:0.78rem;padding:0.5rem 0.7rem;}
+  .modal h3{font-size:0.9rem;margin-bottom:0.9rem;}
+  .type-row{grid-template-columns:repeat(4,1fr);gap:0.28rem;}
+  .type-btn{font-size:0.6rem;padding:0.38rem 0.15rem;}
+  .frow{margin-bottom:0.75rem;}
+  .fbtns{gap:0.4rem;flex-wrap:wrap;}
+  .fbtns .btn{flex:1;min-width:0;justify-content:center;}
+  .finput{font-size:0.76rem;padding:0.48rem 0.65rem;}
 
-  /* Pages padding */
+  /* Other pages padding */
   .page{padding:0 0.85rem 1.5rem !important;}
   .topbar{padding:1rem 0.85rem 0 !important;margin-bottom:1rem;}
+  .topbar-l h2{font-size:1.1rem;}
 
-  /* Stats grid 2-col on mobile */
+  /* Stats 2-col */
   .stats{grid-template-columns:1fr 1fr !important;gap:0.55rem;}
 
-  /* Calendar page */
+  /* Calendar 1-col */
   .cal3{grid-template-columns:1fr !important;}
 
-  /* FAB stays accessible above bottom safe area */
-  .fab{bottom:1.4rem;right:1.2rem;width:48px;height:48px;font-size:1.4rem;}
+  /* Events list on other pages */
+  .ecard{padding:0.75rem 0.85rem;}
+  .etitle{font-size:0.82rem;}
+  .emeta-txt{font-size:0.62rem;}
+
+  /* Schedule page */
+  .schedule-row{grid-template-columns:65px 1fr !important;}
+
+  /* FAB */
+  .fab{
+    bottom:1.2rem;
+    right:1rem;
+    width:46px;
+    height:46px;
+    font-size:1.35rem;
+  }
 }
 
-/* Very small screens */
+/* Very small phones */
 @media(max-width:380px){
   html{font-size:14px;}
-  .dash-topbar{padding:0.75rem 0.8rem 0.6rem !important;}
-  .nd-title{font-size:0.9rem !important;}
-  .dt-row{grid-template-columns:6px 1fr auto 22px !important;gap:0.4rem !important;}
+  .dash-topbar{padding:0.7rem 0.75rem 0.6rem !important;}
   .dash-layout{padding:0.6rem 0.7rem 5rem !important;}
+  .nd-title{font-size:0.88rem !important;}
+  .nd-btn{font-size:0.62rem;padding:0.3rem 0.6rem;}
+  .dt-row{
+    grid-template-columns:6px 1fr auto 22px !important;
+    gap:0.35rem !important;
+    padding:0.55rem 0.2rem !important;
+  }
+  .dt-teacher{max-width:100px;}
+  .tasks-section{padding:0.8rem 0.75rem !important;}
 }
 
 /* ── FLOATING ACTION BUTTON ── */
@@ -2976,93 +3111,90 @@ window.addEventListener('load', ()=>{
 <!-- ══ NOTICE POPUP ══ -->
 <div id="notice-overlay" style="
   position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,0.72);
-  backdrop-filter:blur(6px);
+  background:rgba(0,0,0,0.68);
+  backdrop-filter:blur(5px);
   display:flex;align-items:center;justify-content:center;
   padding:1rem;
-  animation:noticeIn 0.25s ease;
+  animation:noticeIn 0.2s ease;
 ">
   <div style="
     background:linear-gradient(145deg,#0f1424,#131829);
     border:1px solid rgba(255,255,255,0.1);
-    border-radius:20px;
-    padding:2rem 2rem 1.6rem;
-    max-width:460px;width:100%;
-    box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(99,102,241,0.2);
+    border-radius:16px;
+    padding:1.3rem 1.4rem 1.2rem;
+    max-width:380px;width:100%;
+    box-shadow:0 24px 60px rgba(0,0,0,0.65),0 0 0 1px rgba(99,102,241,0.18);
     position:relative;
-    animation:noticeSlide 0.3s cubic-bezier(.22,.97,.5,1.2) both;
+    animation:noticeSlide 0.28s cubic-bezier(.22,.97,.5,1.2) both;
   ">
     <!-- Top accent bar -->
-    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f59e0b,#4f7cff,#6366f1);border-radius:20px 20px 0 0;"></div>
+    <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#f59e0b,#4f7cff,#6366f1);border-radius:16px 16px 0 0;"></div>
 
     <!-- Icon + Title -->
-    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.1rem;">
+    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem;">
       <div style="
-        width:44px;height:44px;border-radius:12px;flex-shrink:0;
-        background:linear-gradient(135deg,rgba(245,166,35,0.2),rgba(239,68,68,0.15));
-        border:1px solid rgba(245,166,35,0.35);
-        display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+        width:36px;height:36px;border-radius:9px;flex-shrink:0;
+        background:rgba(245,166,35,0.12);
+        border:1px solid rgba(245,166,35,0.3);
+        display:flex;align-items:center;justify-content:center;font-size:1.05rem;
       ">⚠️</div>
       <div>
-        <div style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:-0.01em;">Important Notice</div>
-        <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);margin-top:1px;font-family:'JetBrains Mono',monospace;">MDPS Academic Tracker · Khulna University</div>
+        <div style="font-size:0.88rem;font-weight:800;color:#fff;letter-spacing:-0.01em;">Important Notice</div>
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.38);margin-top:1px;font-family:'JetBrains Mono',monospace;">MDPS Tracker · Khulna University</div>
       </div>
     </div>
 
     <!-- Divider -->
-    <div style="height:1px;background:linear-gradient(90deg,rgba(245,166,35,0.4),rgba(99,102,241,0.2),transparent);margin-bottom:1.1rem;"></div>
+    <div style="height:1px;background:linear-gradient(90deg,rgba(245,166,35,0.35),rgba(99,102,241,0.15),transparent);margin-bottom:0.8rem;"></div>
 
     <!-- Message -->
-    <p style="font-size:0.88rem;line-height:1.75;color:rgba(221,228,240,0.9);margin-bottom:0.6rem;">
-      This website <strong style="color:#fff;">does not provide official updates.</strong><br>
+    <p style="font-size:0.78rem;line-height:1.65;color:rgba(221,228,240,0.88);margin-bottom:0.5rem;">
+      This website <strong style="color:#fff;">does not provide official updates.</strong>
       Please follow the
       <span style="
-        display:inline-flex;align-items:center;gap:0.3rem;
-        background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.3);
-        color:#25d366;font-weight:700;font-size:0.82rem;
-        padding:0.1rem 0.5rem;border-radius:6px;vertical-align:middle;
+        display:inline-flex;align-items:center;gap:0.25rem;
+        background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.28);
+        color:#25d366;font-weight:700;font-size:0.72rem;
+        padding:0.08rem 0.45rem;border-radius:5px;vertical-align:middle;
       ">💬 WhatsApp Update Section</span>
-      for the latest official information.
+      for official information.
     </p>
-
-    <!-- Footer note -->
-    <div style="font-size:0.68rem;color:rgba(255,255,255,0.28);margin-bottom:0.6rem;line-height:1.5;">
-      This tracker is a personal academic tool only. All official communications are shared via WhatsApp.
-    </div>
 
     <!-- Credit line -->
     <div style="
-      display:inline-flex;align-items:center;gap:0.4rem;
-      background:rgba(79,124,255,0.08);border:1px solid rgba(79,124,255,0.2);
-      border-radius:8px;padding:0.3rem 0.75rem;margin-bottom:1.2rem;
+      display:flex;align-items:center;gap:0.35rem;
+      background:rgba(79,124,255,0.07);border:1px solid rgba(79,124,255,0.18);
+      border-radius:7px;padding:0.25rem 0.65rem;margin-bottom:0.9rem;margin-top:0.6rem;
     ">
-      <span style="font-size:0.65rem;color:rgba(255,255,255,0.35);">Built &amp; maintained by</span>
-      <span style="font-size:0.72rem;font-weight:700;color:#7b9fff;font-family:'JetBrains Mono',monospace;">AraFath — MDPS 261510</span>
+      <span style="font-size:0.6rem;color:rgba(255,255,255,0.3);">Built by</span>
+      <span style="font-size:0.66rem;font-weight:700;color:#7b9fff;font-family:'JetBrains Mono',monospace;">AraFath — MDPS 261510</span>
     </div>
 
     <!-- Close button -->
     <button onclick="document.getElementById('notice-overlay').style.display='none'" style="
-      display:block;width:100%;padding:0.7rem 1rem;
+      display:block;width:100%;padding:0.55rem 1rem;
       background:linear-gradient(135deg,#4f7cff,#6366f1);
       color:#fff;font-family:'Plus Jakarta Sans',sans-serif;
-      font-size:0.85rem;font-weight:700;letter-spacing:0.02em;
-      border:none;border-radius:10px;cursor:pointer;
-      box-shadow:0 4px 18px rgba(79,124,255,0.35);
-      transition:all 0.15s;
+      font-size:0.78rem;font-weight:700;letter-spacing:0.02em;
+      border:none;border-radius:8px;cursor:pointer;
+      box-shadow:0 3px 14px rgba(79,124,255,0.3);
+      transition:opacity 0.15s;
     "
-    onmouseover="this.style.opacity='0.88'"
+    onmouseover="this.style.opacity='0.85'"
     onmouseout="this.style.opacity='1'"
-    >
-      ✓ &nbsp;I Understand — Close
-    </button>
+    >✓ &nbsp;I Understand — Close</button>
   </div>
 </div>
 
 <style>
 @keyframes noticeIn{from{opacity:0}to{opacity:1}}
-@keyframes noticeSlide{from{opacity:0;transform:translateY(18px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes noticeSlide{from{opacity:0;transform:translateY(14px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:480px){
-  #notice-overlay > div{padding:1.4rem 1.2rem 1.2rem!important;border-radius:16px!important;}
+  #notice-overlay > div{
+    padding:1.1rem 1rem 1rem !important;
+    border-radius:14px !important;
+    max-width:100% !important;
+  }
 }
 </style>
 </body>
