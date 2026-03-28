@@ -1454,7 +1454,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
       <span id="gdrive-label">Connect Google Drive</span>
     </button>
     <div id="gdrive-status" onclick="copyShareUrl()" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;cursor:pointer;"></div>
-    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;" class="set-btn">🔄 Sync to Friends</button>
+    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;" class="set-btn" title="Auto-syncs after every change. Click to force sync immediately.">🔄 Sync to Friends</button>
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
       👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
       <div id="last-updated-display" style="font-size:0.58rem;color:var(--text3);margin-top:0.2rem;font-family:var(--mono);"></div>
@@ -1901,7 +1901,7 @@ const SEED = {
 
 // DRIVE
 const DRIVE_FILE_NAME = 'mdps-tracker-data.json';
-let gDriveFileId = null, gDriveUser = null, driveSyncTimer = null;
+let gDriveFileId = null, gDriveUser = null, driveSyncTimer = null, gistSyncTimer = null;
 
 function load() {
   const s = localStorage.getItem(SK);
@@ -1924,11 +1924,21 @@ function _seedDB() {
 function persist() {
   localStorage.setItem(SK, JSON.stringify(DB));
   scheduleDriveSync();
+  scheduleGistSync();
 }
 function scheduleDriveSync() {
   if(!gDriveUser) return;
   clearTimeout(driveSyncTimer);
   driveSyncTimer = setTimeout(saveToDrive, 800);
+}
+function scheduleGistSync() {
+  const pat = localStorage.getItem('mdps-gh-pat');
+  const gistId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if(!pat || !gistId) return; // Only auto-sync if already configured
+  clearTimeout(gistSyncTimer);
+  gistSyncTimer = setTimeout(async () => {
+    try { await publishPublicSnapshot(); } catch(e) { console.warn('Auto-gist sync failed:', e); }
+  }, 2000); // 2s debounce — waits for burst edits to settle
 }
 load();
 
@@ -2793,11 +2803,11 @@ async function forceSyncNow() {
   if(btn) { btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
   try {
     await publishPublicSnapshot();
-    if(btn) { btn.textContent = '✅ Synced! Friends can see updates'; btn.disabled = false; }
-    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Force Sync to Friends'; }, 3000);
+    if(btn) { btn.textContent = '✅ Synced!'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Sync to Friends'; }, 3000);
   } catch(e) {
-    if(btn) { btn.textContent = '❌ Sync failed — try again'; btn.disabled = false; }
-    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Force Sync to Friends'; }, 3000);
+    if(btn) { btn.textContent = '❌ Failed — try again'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Sync to Friends'; }, 3000);
   }
 }
 
