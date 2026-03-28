@@ -3017,16 +3017,23 @@ function showLastUpdated(iso) {
 
 async function tryLoadPublicData() {
   const gistId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
-  if(!gistId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
+  if(!gistId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); refresh(); return; }
   try {
     setDriveStatus('\ud83d\udd04 Loading...');
-    // GitHub Gist raw URLs have CORS headers — no proxy needed
-    const cb = Date.now();
-    const r = await fetch('https://gist.githubusercontent.com/raw/' + gistId + '/mdps-tracker-data.json?t=' + cb, {
+    // Use GitHub Gist API endpoint — works on all devices (mobile + desktop),
+    // bypasses CDN cache, and does not require the username in the URL.
+    const r = await fetch('https://api.github.com/gists/' + gistId, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Cache-Control': 'no-cache'
+      },
       cache: 'no-store'
     });
     if(!r.ok) throw new Error('Fetch failed: ' + r.status);
-    const pubData = await r.json();
+    const gistData = await r.json();
+    const fileEntry = gistData.files && gistData.files['mdps-tracker-data.json'];
+    if(!fileEntry || !fileEntry.content) throw new Error('File not found in gist');
+    const pubData = JSON.parse(fileEntry.content);
     if(!pubData.events) throw new Error('Missing events');
     DB = {
       events: pubData.events,
@@ -3046,6 +3053,7 @@ async function tryLoadPublicData() {
     setOwnerMode(false);
     showViewOnlyNotice('AraFath');
     setDriveStatus('\u26a0\ufe0f Could not load \u2014 retrying...');
+    refresh(); // Still render whatever data we have rather than a blank screen
     setTimeout(tryLoadPublicData, 20000);
   }
 }
@@ -3389,12 +3397,15 @@ function exportToPDF() {
 window.addEventListener('load', ()=>{
   applyTheme();
   updateSb();
-  renderDash();
   const params = new URLSearchParams(location.search);
   const isView = params.get('view');
   const urlFileId = params.get('id');
   if(isView) {
-    // If file ID is in the URL, use it directly
+    // VIEW MODE: do NOT pre-render stale local/seed data.
+    // Show a loading indicator and wait for fresh Gist data to arrive.
+    setOwnerMode(false);
+    showViewOnlyNotice('AraFath');
+    setDriveStatus('\ud83d\udd04 Loading latest data...');
     if(urlFileId) {
       BAKED_PUBLIC_FILE_ID = urlFileId;
       DB.settings.publicFileId = urlFileId;
@@ -3402,6 +3413,8 @@ window.addEventListener('load', ()=>{
     }
     tryLoadPublicData();
   } else {
+    // OWNER MODE: render immediately from local storage as normal
+    renderDash();
     setOwnerMode(true);
     // Auto-reconnect Drive if we have a saved token
     const saved = localStorage.getItem(DRIVE_TOKEN_KEY);
