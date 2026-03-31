@@ -188,6 +188,9 @@ body.light-mode .sb-overlay { background: rgba(10,20,60,0.45) !important; }
 body.light-mode ::-webkit-scrollbar-thumb { background: rgba(61,98,240,0.2) !important; }
 
 
+/* Theme toggle hidden — light mode only */
+#theme-toggle-btn, #mob-theme-toggle-btn, .mob-theme-btn { display:none !important; }
+
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{font-size:17px;scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background 0.3s,color 0.3s;}
@@ -238,12 +241,12 @@ body.owner-mode .owner-badge{display:flex;}
 .sidebar{width:var(--sb-w);flex-shrink:0;background:rgba(8,12,20,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;transition:transform 0.3s ease;}
 .sb-logo{padding:1.3rem 1.2rem 1rem;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
 .sb-logo::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,124,255,0.08),transparent);pointer-events:none;}
-.sb-logo-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;}
-.sb-crest{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1a3a6b,#0f2450);border:1px solid rgba(79,124,255,0.35);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;box-shadow:0 2px 10px rgba(79,124,255,0.2);}
-.sb-logo h1{font-size:0.8rem;font-weight:700;letter-spacing:-0.02em;color:var(--text);line-height:1.3;}
-.sb-logo p{font-size:0.6rem;color:var(--text3);font-family:var(--mono);}
-.sb-logo .ku{font-size:0.62rem;color:var(--blue2);font-weight:600;margin-top:2px;}
-.sb-badge-row{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.35rem;}
+.sb-logo-row{display:flex;align-items:center;gap:0.85rem;margin-bottom:0.6rem;}
+.sb-crest{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,#dde6ff,#eef2ff);border:1.5px solid rgba(61,98,240,0.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 12px rgba(79,124,255,0.18);overflow:hidden;}
+.sb-logo h1{font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:var(--text);line-height:1.25;}
+.sb-logo p{font-size:0.72rem;color:var(--text3);font-family:var(--mono);}
+.sb-logo .ku{font-size:0.76rem;color:var(--blue2);font-weight:700;margin-top:3px;}
+.sb-badge-row{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.45rem;}
 
 /* Profile pill */
 .profile-pill{margin:0.8rem 0.9rem;background:linear-gradient(135deg,rgba(79,124,255,0.1),rgba(129,140,248,0.05));border-radius:var(--r);padding:0.65rem 0.75rem;display:flex;align-items:center;gap:0.7rem;cursor:pointer;transition:all 0.15s;border:1px solid rgba(79,124,255,0.2);}
@@ -682,6 +685,36 @@ textarea.finput{resize:vertical;min-height:130px;line-height:1.8;letter-spacing:
   body.light-mode .dash-mob-nav{
     background:rgba(241,245,251,0.93);
   }
+
+  /* University info in mobile nav */
+  .mob-uni-info{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-width:0;
+    overflow:hidden;
+  }
+  .mob-uni-title{
+    font-size:0.72rem;
+    font-weight:700;
+    color:var(--accent);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+  }
+  .mob-uni-sub{
+    font-size:0.6rem;
+    font-weight:500;
+    color:var(--text2);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+  }
+  body.light-mode .mob-uni-title{ color:#2a4db5; }
 
   /* ☰ Menu button */
   .mob-menu-btn{
@@ -1421,7 +1454,7 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
       <span id="gdrive-label">Connect Google Drive</span>
     </button>
     <div id="gdrive-status" onclick="copyShareUrl()" style="font-size:0.6rem;font-family:var(--mono);color:var(--text3);text-align:center;min-height:14px;padding:0 0.5rem;cursor:pointer;"></div>
-    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;" class="set-btn">🔄 Sync to Friends</button>
+    <button id="force-sync-btn" onclick="forceSyncNow()" style="display:none;" class="set-btn" title="Auto-syncs after every change. Click to force sync immediately.">🔄 Sync to Friends</button>
     <div id="view-only-notice" style="font-size:0.62rem;color:var(--text3);text-align:center;padding:0.3rem 0.5rem;line-height:1.4;display:none;">
       👁 Viewing <strong id="owner-name-display">AraFath</strong>'s tracker
       <div id="last-updated-display" style="font-size:0.58rem;color:var(--text3);margin-top:0.2rem;font-family:var(--mono);"></div>
@@ -1451,8 +1484,10 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
         </svg>
         Menu
       </button>
-      <div style="flex:1"></div>
-      <button class="mob-theme-btn" id="mob-theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+      <div class="mob-uni-info">
+        <span class="mob-uni-title">MDPS · Khulna University</span>
+        <span class="mob-uni-sub">1st Year, 1st Term · 2025–2026</span>
+      </div>
       <button class="dash-addtask-btn" onclick="openAddEvent()">＋ Add Task</button>
     </div>
 
@@ -1866,7 +1901,7 @@ const SEED = {
 
 // DRIVE
 const DRIVE_FILE_NAME = 'mdps-tracker-data.json';
-let gDriveFileId = null, gDriveUser = null, driveSyncTimer = null;
+let gDriveFileId = null, gDriveUser = null, driveSyncTimer = null, gistSyncTimer = null;
 
 function load() {
   const s = localStorage.getItem(SK);
@@ -1889,11 +1924,21 @@ function _seedDB() {
 function persist() {
   localStorage.setItem(SK, JSON.stringify(DB));
   scheduleDriveSync();
+  scheduleGistSync();
 }
 function scheduleDriveSync() {
   if(!gDriveUser) return;
   clearTimeout(driveSyncTimer);
   driveSyncTimer = setTimeout(saveToDrive, 800);
+}
+function scheduleGistSync() {
+  const pat = localStorage.getItem('mdps-gh-pat');
+  const gistId = DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
+  if(!pat || !gistId) return; // Only auto-sync if already configured
+  clearTimeout(gistSyncTimer);
+  gistSyncTimer = setTimeout(async () => {
+    try { await publishPublicSnapshot(); } catch(e) { console.warn('Auto-gist sync failed:', e); }
+  }, 2000); // 2s debounce — waits for burst edits to settle
 }
 load();
 
@@ -2758,34 +2803,22 @@ async function forceSyncNow() {
   if(btn) { btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
   try {
     await publishPublicSnapshot();
-    if(btn) { btn.textContent = '✅ Synced! Friends can see updates'; btn.disabled = false; }
-    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Force Sync to Friends'; }, 3000);
+    if(btn) { btn.textContent = '✅ Synced!'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Sync to Friends'; }, 3000);
   } catch(e) {
-    if(btn) { btn.textContent = '❌ Sync failed — try again'; btn.disabled = false; }
-    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Force Sync to Friends'; }, 3000);
+    if(btn) { btn.textContent = '❌ Failed — try again'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '🔄 Sync to Friends'; }, 3000);
   }
 }
 
 // ── THEME ──
 function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-mode');
-  localStorage.setItem('mdps-theme', isLight ? 'light' : 'dark');
-  const icon = isLight ? '☀️' : '🌙';
-  const sb = document.getElementById('theme-toggle-btn');
-  const mob = document.getElementById('mob-theme-toggle-btn');
-  if(sb) sb.textContent = icon;
-  if(mob) mob.textContent = icon;
+  /* Theme toggling disabled — light mode only */
 }
 function applyTheme() {
-  const t = localStorage.getItem('mdps-theme');
-  if(t === 'light') {
-    document.body.classList.add('light-mode');
-    const icon = '☀️';
-    const sb = document.getElementById('theme-toggle-btn');
-    const mob = document.getElementById('mob-theme-toggle-btn');
-    if(sb) sb.textContent = icon;
-    if(mob) mob.textContent = icon;
-  }
+  /* Always force light mode */
+  document.body.classList.add('light-mode');
+  localStorage.setItem('mdps-theme', 'light');
 }
 
 // ── GOOGLE DRIVE ──
@@ -3017,16 +3050,23 @@ function showLastUpdated(iso) {
 
 async function tryLoadPublicData() {
   const gistId = BAKED_PUBLIC_FILE_ID || DB.settings.publicFileId || localStorage.getItem('mdps-public-file-id');
-  if(!gistId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); return; }
+  if(!gistId) { setOwnerMode(false); showViewOnlyNotice('AraFath'); refresh(); return; }
   try {
     setDriveStatus('\ud83d\udd04 Loading...');
-    // GitHub Gist raw URLs have CORS headers — no proxy needed
-    const cb = Date.now();
-    const r = await fetch('https://gist.githubusercontent.com/raw/' + gistId + '/mdps-tracker-data.json?t=' + cb, {
+    // Use GitHub Gist API endpoint — works on all devices (mobile + desktop),
+    // bypasses CDN cache, and does not require the username in the URL.
+    const r = await fetch('https://api.github.com/gists/' + gistId, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Cache-Control': 'no-cache'
+      },
       cache: 'no-store'
     });
     if(!r.ok) throw new Error('Fetch failed: ' + r.status);
-    const pubData = await r.json();
+    const gistData = await r.json();
+    const fileEntry = gistData.files && gistData.files['mdps-tracker-data.json'];
+    if(!fileEntry || !fileEntry.content) throw new Error('File not found in gist');
+    const pubData = JSON.parse(fileEntry.content);
     if(!pubData.events) throw new Error('Missing events');
     DB = {
       events: pubData.events,
@@ -3046,6 +3086,7 @@ async function tryLoadPublicData() {
     setOwnerMode(false);
     showViewOnlyNotice('AraFath');
     setDriveStatus('\u26a0\ufe0f Could not load \u2014 retrying...');
+    refresh(); // Still render whatever data we have rather than a blank screen
     setTimeout(tryLoadPublicData, 20000);
   }
 }
@@ -3389,12 +3430,15 @@ function exportToPDF() {
 window.addEventListener('load', ()=>{
   applyTheme();
   updateSb();
-  renderDash();
   const params = new URLSearchParams(location.search);
   const isView = params.get('view');
   const urlFileId = params.get('id');
   if(isView) {
-    // If file ID is in the URL, use it directly
+    // VIEW MODE: do NOT pre-render stale local/seed data.
+    // Show a loading indicator and wait for fresh Gist data to arrive.
+    setOwnerMode(false);
+    showViewOnlyNotice('AraFath');
+    setDriveStatus('\ud83d\udd04 Loading latest data...');
     if(urlFileId) {
       BAKED_PUBLIC_FILE_ID = urlFileId;
       DB.settings.publicFileId = urlFileId;
@@ -3402,6 +3446,8 @@ window.addEventListener('load', ()=>{
     }
     tryLoadPublicData();
   } else {
+    // OWNER MODE: render immediately from local storage as normal
+    renderDash();
     setOwnerMode(true);
     // Auto-reconnect Drive if we have a saved token
     const saved = localStorage.getItem(DRIVE_TOKEN_KEY);
