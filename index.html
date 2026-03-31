@@ -1433,6 +1433,12 @@ body.light-mode .sf-card.sf-folder{background:linear-gradient(135deg,#fff,rgba(2
   </div>
 </aside>
 
+<div id="viewer-loading-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;gap:1rem;">
+  <div style="width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="font-size:0.85rem;color:var(--text2);font-family:var(--font);">Loading tracker data…</div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+
 <main class="main">
 
 <!-- DASHBOARD -->
@@ -3039,6 +3045,8 @@ async function tryLoadPublicData() {
     showViewOnlyNotice(DB.settings.name);
     showLastUpdated(pubData._published);
     setDriveStatus('');
+    const ls = document.getElementById('viewer-loading-screen');
+    if(ls) ls.style.display = 'none';
     refresh(); updateSb();
     setTimeout(tryLoadPublicData, 30000);
   } catch(e) {
@@ -3046,6 +3054,8 @@ async function tryLoadPublicData() {
     setOwnerMode(false);
     showViewOnlyNotice('AraFath');
     setDriveStatus('\u26a0\ufe0f Could not load \u2014 retrying...');
+    const ls = document.getElementById('viewer-loading-screen');
+    if(ls) ls.style.display = 'none';
     setTimeout(tryLoadPublicData, 20000);
   }
 }
@@ -3394,6 +3404,9 @@ window.addEventListener('load', ()=>{
   const isView = params.get('view');
   const urlFileId = params.get('id');
   if(isView) {
+    // Show loading screen so friends never see stale seed data
+    const ls = document.getElementById('viewer-loading-screen');
+    if(ls) ls.style.display = 'flex';
     // If file ID is in the URL, use it directly
     if(urlFileId) {
       BAKED_PUBLIC_FILE_ID = urlFileId;
