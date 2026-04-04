@@ -2827,16 +2827,29 @@ function initGapi(silent=false) {
           const tok = JSON.parse(saved);
           // Check it hasn't expired (tokens last 1 hour)
           if(tok.expires_at && Date.now() < tok.expires_at) {
-            gapi.client.setToken(tok);
+            // Strip custom field before passing to gapi (it only wants standard OAuth fields)
+            const { expires_at, ...gapiTok } = tok;
+            gapi.client.setToken(gapiTok);
             gDriveUser=true;
             setOwnerMode(true);
             setDriveStatus('🔄 Syncing...');
-            await loadFromDrive();
-            setDriveStatus('✅ Connected');
-            updateSb();
-            // Still load GIS in background for future refresh
-            loadGIS(true);
-            return;
+            try {
+              await loadFromDrive();
+              setDriveStatus('✅ Connected');
+              updateSb();
+              // Load GIS in background so token can be silently refreshed later
+              loadGIS(true);
+              return;
+            } catch(loadErr) {
+              // Token was accepted by gapi but Drive call failed — token likely revoked
+              gapi.client.setToken(null);
+              gDriveUser=false;
+              localStorage.removeItem(DRIVE_TOKEN_KEY);
+              setDriveStatus('');
+            }
+          } else {
+            // Token found but expired — clean up before falling through to GIS
+            localStorage.removeItem(DRIVE_TOKEN_KEY);
           }
         } catch(e) { localStorage.removeItem(DRIVE_TOKEN_KEY); }
       }
@@ -2856,8 +2869,8 @@ function loadGIS(silent=false) {
       scope:SCOPES,
       callback:(r)=>{
         if(r.error){ setDriveStatus(''); return; }
-        // Save token with expiry
-        const tok = gapi.client.getToken();
+        // Clone token before mutating (never mutate gapi's live reference)
+        const tok = Object.assign({}, gapi.client.getToken());
         if(tok) {
           tok.expires_at = Date.now() + (3500 * 1000); // ~58 min
           localStorage.setItem(DRIVE_TOKEN_KEY, JSON.stringify(tok));
@@ -2869,6 +2882,10 @@ function loadGIS(silent=false) {
     if(!silent) {
       setDriveStatus('');
       tokenClient.requestAccessToken({prompt:''});
+    } else {
+      // Silent reconnect failed (token expired) — clear stale token, reset status
+      setDriveStatus('');
+      localStorage.removeItem(DRIVE_TOKEN_KEY);
     }
   };
   document.head.appendChild(gs);
